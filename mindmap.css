@@ -1,0 +1,93 @@
+* {
+	box-sizing: border-box; /* Not inherited */
+	margin:0;
+	padding:0;
+}
+body {
+	background:var(--css__left_bg);
+	color:var(--fg);
+	width:100vw;
+	height:100vh;
+	overflow:hidden;
+}
+:root {
+	--css__left_bg:#000;
+	--css__right_bg:#222;
+	--fg:#509dff;
+	--css__hoverable_colour: #0ff;
+	--css__header_colour: #e2e2e2;
+}
+.lightmode_classname {
+	--css__left_bg:#fff;
+	--css__right_bg:#eee;
+	--fg:#509dff;
+	--css__hoverable_colour: #3ad;
+	--css__header_colour: #000;
+}
+#graph-btn-container {
+	position:absolute;
+	z-index:2;
+}
+@media (orientation: portrait) {
+	#graph-canvas, #graph-text-canvas {
+		width:100vw;
+		height:100vw;
+	}
+	#all-nodes-container {
+		width:100vw;
+		height:calc(100vw - 100vh);
+	}
+}
+@media (orientation: landscape) {
+	#graph-canvas, #graph-text-canvas {
+		width:100vh;
+		height:100vh;
+	}
+	#all-nodes-container {
+		width:calc(100vw - 100vh);
+		height:100vh;
+	}
+}
+#graph-text-canvas {
+	position:absolute;
+	left:0;
+	top:0;
+	pointer-events:none;
+	z-index:1;
+}
+#graph-canvas {
+	z-index:0;
+}
+.foreground {
+	background:#fff;
+	color:#000;
+}
+#all-nodes-container {
+	top:0;
+	right:0;
+	position:fixed;
+	overflow-y:scroll;
+	z-index:3;
+	background:var(--css__right_bg);
+}
+.display-none {
+	display:none;
+}
+.display-block {
+	display:block;
+}
+a {
+	color:var(--css__hoverable_colour);
+	cursor:pointer;
+}
+#graph--insertion-ui {
+	position:absolute;
+	top:0;
+	left:0;
+	z-index:3;
+	background:var(--css__left_bg);
+}
+.graph--insertion-ui--user-input-disabled{
+	pointer-events:none;
+	opacity:0.7;
+}
