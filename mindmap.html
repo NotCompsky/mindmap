@@ -88,6 +88,8 @@ fileinput_btn.addEventListener("input", e => {
 				const title = contents[i];
 				let newline_indx = title.indexOf("\n")
 				if (newline_indx === -1)
+					newline_indx = title.length;
+				if (newline_indx > max_line_length)
 					newline_indx = max_line_length;
 				all_titles[i] = title.substr(0,newline_indx);
 			}
@@ -684,12 +686,12 @@ const draw_graph_frame__text_overlay = () => {
 		let [x,y] = matrix_44_apply_to_v2(graph__transformation_matrix, all_graph_nodes__xyr[3*node_indx], all_graph_nodes__xyr[3*node_indx+1]);
 		x -= r*0.5;
 		graph_2dcanvas.font = `bold ${parseInt(r*graph_canvas_width*graph_text_size_multiplier)}px Arial`; // NOTE: Unfortunately there is no way to merely set the fontSize
-		let yy = (-y+1)/2;
 		
 		const content = contents[node_indx];
-		if (content.includes("\n")){
-			let offset = content.indexOf("\n");
-			if (offset > max_line_length)
+		let offset = content.indexOf("\n");
+		if ((offset !== -1) || (content.length > max_line_length)){
+			let yy = r + (-y+1)/2;
+			if ((offset > max_line_length) || (offset === -1))
 				offset = max_line_length;
 			while (offset !== content.length){
 				let next_offset = content.indexOf("\n",offset+1);
