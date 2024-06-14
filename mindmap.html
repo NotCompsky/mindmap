@@ -110,9 +110,6 @@ fileinput_btn.addEventListener("input", e => {
 					newline_indx = max_line_length;
 				all_titles[i] = title.substr(0,newline_indx);
 			}
-			for (let i = 0, N = contents.length;  i < N;  ++i){
-				add_new_node(i);
-			}
 			
 			process_entries();
 			
@@ -122,17 +119,24 @@ fileinput_btn.addEventListener("input", e => {
 	}
 });
 
-function add_new_node(sibling_node_indx){
+function add_new_node(sibling_node_indx, content){
 	const sibling_halfr = all_graph_nodes__xyr[sibling_node_indx*3+2] * 0.5;
 	connectionses[sibling_node_indx].push(connectionses.length);
 	connectionses.push([sibling_node_indx]);
-	contents.push("");
-	all_titles.push("+");
+	contents.push(content);
+	let title_newlineindx = title.indexOf("\n");
+	if (title_newlineindx === -1)
+		title_newlineindx = content.length;
+	if (title_newlineindx > max_line_length)
+		title_newlineindx = max_line_length;
+	const title = content.substr(0,title_newlineindx);
+	all_titles.push(title);
 	all_graph_nodes__xyr.push(
 		all_graph_nodes__xyr[sibling_node_indx*3+0]-sibling_halfr,
 		all_graph_nodes__xyr[sibling_node_indx*3+1]+sibling_halfr,
 		sibling_halfr
 	);
+	nodecolours.push(nodecolours[sibling_node_indx]);
 }
 
 var all_titles = null;
@@ -547,22 +551,13 @@ precision mediump float;in vec4 v_colour;out vec4 c;void main(){c=v_colour;}`
 		if (eventobj.buttons&2){
 			// Right click
 			
-			let new_content = prompt("New content");
-			if (new_content.length === 0)
-				new_content = "+";
-			const must_add_new_node = (contents[d3__currently_selected__last_tmp_value].length === 0);
-			
-			all_titles[d3__currently_selected__last_tmp_value] = new_content;
-			contents[d3__currently_selected__last_tmp_value] = new_content;
-			
-			if (must_add_new_node){
-				// Was a previously-unused 'new' node
-				// so add a new 'new' node
-				add_new_node(connectionss[d3__currently_selected__last_tmp_value][0]);
-				add_new_node(d3__currently_selected__last_tmp_value);
+			const new_content = prompt("New content");
+			if (new_content){
+				add_new_node(d3__currently_selected__last_tmp_value, new_content);
+								
+				d3__currently_selected = all_titles.length - 1;
+				
 				process_entries();
-				draw_graph_frame();
-			} else {
 				draw_graph_frame__text_overlay();
 			}
 		} else {
