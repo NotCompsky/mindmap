@@ -123,12 +123,12 @@ function add_new_node(sibling_node_indx, content){
 	nodecolours.push(nodecolours[sibling_node_indx]);
 }
 
-var all_titles = null;
-var contents;
-var connectionses;
-var nodecolours;
-var colours;
-var all_graph_nodes__xyr;
+var all_titles = ["ROOT","Example"];
+var contents = ["ROOT\nRight click this node to add children","Example"];
+var connectionses = [[1],[0]];
+var nodecolours = [0,0];
+var colours = ["#ff0000"];
+var all_graph_nodes__xyr = [0.0,0.0,0.1, 0.2,0.2,0.1];
 //const all_entries = [{connections:[1],content:"Foo\nfoo\nfoo"},{connections:[0],content:"Bar\nbar\nbar"}];
 //const all_graph_nodes__xyr = [0,0,100, 500,500,50];
 
@@ -517,6 +517,9 @@ precision mediump float;in vec4 v_colour;out vec4 c;void main(){c=v_colour;}`
 	if (graph_canvas_width === 0){
 		set_graph_canvas_dimensions(graph_canvas.clientWidth || 1024,  graph_canvas.clientHeight || 1024);
 	}
+	
+	process_entries();
+	draw_graph_frame();
 	
 	let d3__currently_selected = null;
 	let graph__hasnt_moved_pointer_since_clicking;
