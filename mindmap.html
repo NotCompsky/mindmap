@@ -25,7 +25,72 @@
 "use strict";
 
 
-
+const underlying_buffer2 = [
+	0,0,0,0, // Hidden
+	0,0,0,0,
+	
+	0.576,0.516,0.496,1,
+	0.4,0.4,0.4,1, // Visible
+	
+	0.284,0.255,0.246,1,
+	1,1,1,1, // Primary highlighted (clicked nodes)
+	
+	0.15,0.15,0.15,1,
+	0.85,0.85,0.85,1, // Secondary highlighted (neighbours of primary)
+	
+	0.3,0.3,0.3,1,
+	0.7,0.7,0.7,1, // Tertiary highlighted (hovered nodes)
+	
+	0.45,0.45,0.45,1,
+	0.55,0.55,0.55,1, // Quartiary highlighted (neighbours of hovered)
+	
+	//0.282,0.525,0.831,1, // 'green globe' theme for worldmap: ocean
+	//0.200,0.373,0.588,1,
+	0.302,0.506,0.149,1, // 'green globe' theme for worldmap: ocean
+	0.220,0.365,0.200,1,
+	0.200,0.373,0.588,1,
+	0.180,0.263,0.365,1,
+	
+	1,1,1,1, // Wipe the screen (or, temporarily, the nodes' outline)
+	0,0,0,1,
+	
+	// Formerly all_chart_colours_vec4: // TODO: More? // Need at least 11 (search engines)
+	0.902, 0.624, 0.0,   1.0,
+	0.902, 0.624, 0.0,   1.0,
+	0.337, 0.706, 0.914, 1.0,
+	0.337, 0.706, 0.914, 1.0,
+	0.0,   0.62,  0.451, 1.0,
+	0.0,   0.62,  0.451, 1.0,
+	0.0,   0.447, 0.698, 1.0,
+	0.0,   0.447, 0.698, 1.0,
+	0.835, 0.369, 0.0,   1.0,
+	0.835, 0.369, 0.0,   1.0,
+	0.8,   0.475, 0.655, 1.0,
+	0.8,   0.475, 0.655, 1.0,
+	0.941, 0.894, 0.259, 1.0, // 7
+	0.941, 0.894, 0.259, 1.0,
+	0.494, 0.49,  0.502, 1.0, // From tagem/svgedit.js
+	0.494, 0.49,  0.502, 1.0,
+	0.49,  0.2,   0.404, 1.0, // From tagem/svgedit.js but each RGB incremented by 16 (1 top character)
+	0.49,  0.2,   0.404, 1.0,
+	0.635, 0.388, 0.82,  1.0, // From tagem/svgedit.js
+	0.635, 0.388, 0.82,  1.0,
+	0.78,  0.647, 0.871, 1.0, // From tagem/svgedit.js
+	0.78,  0.647, 0.871, 1.0,
+	
+	1,0,0,1, // TODO: Maybe replace this with a good chart colour. Or maybe red is needed?
+	1,0,0,1,
+	0,0,1,1, //
+	0,0,1,1,
+	0.518,0.726,0.475,1, // custom made in GIMP
+	0,1,0,1,
+	1,0,1,1,
+	1,0,1,1,
+	0.5,0,0,1,
+	0.5,0,0,1,
+	0.343,0.775,0.897,1, // custom made in GIMP
+	0,1,1,1,
+];
 
 
 const load_shader = (gl, type, source) => {
@@ -201,7 +266,7 @@ function process_entries(){
 		graph_gl.bufferData(graph_gl.ARRAY_BUFFER, 384 * total_nodes + 96 * total_edges, graph_gl.DYNAMIC_DRAW); // Preallocate. 16 == sizeof(vec4) == sizeof(float) * 4, and 4 triangles per node, 3 colours per triangle
 		
 		all_graph_nodes__matrixmults = new Float32Array(48 * total_nodes + 12 * total_edges).fill(0); // 12 vec2 for each node (4 triangles)
-		all_graph_nodes__colours = new Float32Array(96 * total_nodes + 24 * total_edges).fill(0); // 4 vertices for each node, one colour per vertex
+		all_graph_nodes__colours = new Float32Array(24 * total_nodes + 6 * total_edges).fill(0); // one colour per vertex
 		
 		let matrix_indx = 0;
 		for (let i = 0;  i < n_graph_edges;  ++i, matrix_indx+=12){
@@ -450,10 +515,22 @@ document.addEventListener("DOMContentLoaded", () => {
 	const graph_gl_program = init_graph(
 		graph_gl,
 		`#version 300 es
+precision mediump float;
 layout(location=0)in vec4 a;layout(location=1)in vec4 b;uniform mat4 u;out vec4 v_colour;void main(){gl_Position=u*a;v_colour=b;}`,
 		`#version 300 es
-precision mediump float;in vec4 v_colour;out vec4 c;void main(){c=v_colour;}`
+precision mediump float;
+
+uniform vec4 colours[52];
+precision mediump float;
+in float v_colour;
+out vec4 c;
+void main(){
+	int is_light_theme = 0;
+	c=colours[2*int(v_colour) + is_light_theme];
+}`
 	);
+	
+	graph_gl.uniform4fv(graph_gl.getUniformLocation(graph_gl_program, "colours"), underlying_buffer2);
 		
 	graph_gl.disable(graph_gl.DEPTH_TEST);
 	graph_gl_u_graphmatrixmult = graph_gl.getUniformLocation(graph_gl_program, "u");
@@ -737,17 +814,16 @@ const set_graph_node_colours = colours_arr => {
 	graph_gl.enableVertexAttribArray(1 /*graph_gl__a_nodecolours_loc*/);
 	graph_gl.vertexAttribPointer(
 		1 /*graph_gl__a_nodecolours_loc*/,
-		4,                // size (num values to pull from buffer per iteration)
+		1,                // size (num values to pull from buffer per iteration)
 		graph_gl.FLOAT,
 		false,            // normalize
-		16,               // stride
+		4,                // stride
 		0                 // offset
 	);
 };
 const set_highlighted_node_colours = () => {
 	let vertex_indx = 96*all_titles.length + 24*n_graph_edges;
 	n_extra_graph_triangles_to_render = 0;
-	const outline_colour = [1.0,1.0,1.0,1.0];
 	for (let i = graph__highlighted_nodes.length;  i !== 0;  ){
 		// In reverse order because a clicked node might also be counted as hovered
 		--i;
@@ -755,7 +831,7 @@ const set_highlighted_node_colours = () => {
 		const colour = entry[0][is_dark_theme];
 		for (let edge_indx of entry[2]){
 			for (let j = 0;  j < 24;  ++j)
-				all_graph_nodes__colours[vertex_indx + j] = colour[j%4];
+				all_graph_nodes__colours[vertex_indx + j] = 1;
 			vertex_indx += 24;
 			n_extra_graph_triangles_to_render += 2;
 		}
@@ -766,16 +842,15 @@ const set_highlighted_node_colours = () => {
 		const entry = graph__highlighted_nodes[i];
 		const colour = entry[0][is_dark_theme];
 		for (let node_indx of entry[1]){
-			for (let j = 0;  j < 48;  ++j)
-				all_graph_nodes__colours[vertex_indx + j] = outline_colour[j%4];
-			vertex_indx += 48;
-			for (let j = 0;  j < 48;  ++j)
-				all_graph_nodes__colours[vertex_indx + j] = colour[j%4];
-			vertex_indx += 48;
+			for (let j = 0;  j < 12;  ++j)
+				all_graph_nodes__colours[vertex_indx + j] = 2;
+			vertex_indx += 12;
+			for (let j = 0;  j < 12;  ++j)
+				all_graph_nodes__colours[vertex_indx + j] = 8; // colour_indx_of_screenwipe (outline)
+			vertex_indx += 12;
 			n_extra_graph_triangles_to_render += 8;
 		}
 	}
-	
 	
 	set_graph_node_colours(all_graph_nodes__colours);
 };
@@ -856,11 +931,10 @@ const unhighlight_all_nodes = () => {
 var is_dark_theme = 1;
 const graph__reset_node_colours = () => {
 	for (let i = 0;  i < all_graph_nodes__colours.length;  ++i){
-		all_graph_nodes__colours[i] = (i%4===3) | is_dark_theme; // (1,1,1,1) if dark theme, else all 0 except opacity
+		all_graph_nodes__colours[i] = 1; // (1,1,1,1) if dark theme, else all 0 except opacity
 	}
-	const wubblubbadubdub = new Float32Array(48).fill(0).map((x,i) => (i%4===3)|(is_dark_theme^1)); // 48 length // TODO: Maybe don't need to worry about opacity?
-	for (let i = n_graph_edges*24;  i < all_graph_nodes__colours.length;  i+=96){
-		all_graph_nodes__colours.set(wubblubbadubdub, i); // NOTE: No need to worry about opacity because opacity blending has not been enabled
+	for (let i = n_graph_edges*6;  i < all_graph_nodes__colours.length;  ++i){
+		all_graph_nodes__colours[i] = 8; // NOTE: No need to worry about opacity because opacity blending has not been enabled
 	}
 	set_highlighted_node_colours();
 };
