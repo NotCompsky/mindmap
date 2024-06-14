@@ -532,7 +532,7 @@ precision mediump float;in vec4 v_colour;out vec4 c;void main(){c=v_colour;}`
 		[d3__svg__clickedat_x, d3__svg__clickedat_y] = get_canvas_coords_from_pointer_event(eventobj);
 		d3__currently_selected__last_tmp_value = node_containing_coords(d3__svg__clickedat_x, d3__svg__clickedat_y);
 		
-		if (eventobj.buttons&2){
+		if ((eventobj.buttons&2) === 2){
 			// Right click
 			
 			const new_content = prompt("New content");
