@@ -109,7 +109,7 @@ function add_new_node(sibling_node_indx, content){
 	connectionses[sibling_node_indx].push(connectionses.length);
 	connectionses.push([sibling_node_indx]);
 	contents.push(content);
-	let title_newlineindx = title.indexOf("\n");
+	let title_newlineindx = content.indexOf("\n");
 	if (title_newlineindx === -1)
 		title_newlineindx = content.length;
 	if (title_newlineindx > max_line_length)
