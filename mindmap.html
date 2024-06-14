@@ -97,6 +97,8 @@ fileinput_btn.addEventListener("input", e => {
 			process_entries();
 			
 			fileinput_btn.disabled = false;
+			
+			draw_graph_frame_or_polygon_replacement();
 		});
 		reader.readAsText(file);
 	}
