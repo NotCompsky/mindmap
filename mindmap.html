@@ -114,8 +114,7 @@ function add_new_node(sibling_node_indx, content){
 		title_newlineindx = content.length;
 	if (title_newlineindx > max_line_length)
 		title_newlineindx = max_line_length;
-	const title = content.substr(0,title_newlineindx);
-	all_titles.push(title);
+	all_titles.push(content.substr(0,title_newlineindx));
 	all_graph_nodes__xyr.push(
 		all_graph_nodes__xyr[sibling_node_indx*3+0]-sibling_halfr,
 		all_graph_nodes__xyr[sibling_node_indx*3+1]+sibling_halfr,
