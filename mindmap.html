@@ -6,24 +6,6 @@
 	<title>My-Mindmap</title>
 	<link rel="stylesheet" type="text/css" href="mindmap.css"></link>
 	<style>
-#canvas_img_overlay {
-	opacity:0.6;
-	pointer-events:none;
-	position:absolute;
-}
-@media (orientation: portrait) {
-	#canvas_img_overlay {
-		width:100vw;
-	}
-}
-@media (orientation: landscape) {
-	#canvas_img_overlay {
-		width:50vw;
-	}
-}
-#canvas_img_overlay[src="data,"] {
-	display:none;
-}
 .displaynone {
 	display:none!important;
 }
@@ -36,7 +18,6 @@
 	<input type="file" id="fileinput"/><label for="fileinput">Load</label>
 </div>
 
-<img id="canvas_img_overlay" src="worldmap.webp"></img>
 <canvas id="graph-canvas"></canvas>
 <canvas id="graph-text-canvas"></canvas>
 
@@ -484,9 +465,6 @@ precision mediump float;in vec4 v_colour;out vec4 c;void main(){c=v_colour;}`
 		graph_2dcanvas.textBaseline = "middle";
 		graph_2dcanvas.lineWidth = 5;
 		graph_2dcanvas.fillStyle = "#ffffff";
-		
-		//document.getElementById("canvas_img_overlay").width  = w;
-		//document.getElementById("canvas_img_overlay").height = h;
 		
 		graph_gl.viewport(0, 0, w, h);
 		if (all_titles !== null)
