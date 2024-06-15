@@ -270,20 +270,6 @@ fileinput_btn.addEventListener("input", e => {
 	}
 });
 
-function add_new_node(sibling_node_indx, content){
-	const sibling_halfr = all_graph_nodes__xyr[sibling_node_indx*3+2] * 0.5;
-	connectionses[sibling_node_indx].push(connectionses.length);
-	connectionses.push([sibling_node_indx]);
-	contents.push(content);
-	all_titles.push(title_from_content(content));
-	all_graph_nodes__xyr.push(
-		all_graph_nodes__xyr[sibling_node_indx*3+0]-sibling_halfr,
-		all_graph_nodes__xyr[sibling_node_indx*3+1]+sibling_halfr,
-		sibling_halfr
-	);
-	nodecolours.push(nodecolours[sibling_node_indx]);
-}
-
 var all_titles = ["ROOT","Example"];
 var contents = ["ROOT\nRight click this node to add children","Example"];
 var connectionses = [[1],[0]];
@@ -771,7 +757,17 @@ void main(){
 		}
 	});
 	nodecontent_createsibling_input.addEventListener("pointerup", ()=>{
-		add_new_node(currently_displaying_node_indx, "New Node");
+		const sibling_halfr = all_graph_nodes__xyr[currently_displaying_node_indx*3+2];
+		connectionses[currently_displaying_node_indx].push(connectionses.length);
+		connectionses.push([currently_displaying_node_indx]);
+		contents.push("New Node");
+		all_titles.push(title_from_content("New Node"));
+		const t = 100.0*Date.now();
+		all_graph_nodes__xyr.push(
+			all_graph_nodes__xyr[currently_displaying_node_indx*3+0]+2.0*Math.cos(t)*sibling_halfr,
+			all_graph_nodes__xyr[currently_displaying_node_indx*3+1]+2.0*Math.sin(t)*sibling_halfr,
+			sibling_halfr
+		);
 		process_entries();
 		draw_graph_frame();
 	});
