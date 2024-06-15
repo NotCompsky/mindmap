@@ -263,9 +263,11 @@ function process_entries(){
 		}
 	}
 	
-	for (let i = all_graph_nodes__edges.length;  i < all_graph_edges__indx+1;  ++i)
+	for (let i = 0;  i < all_graph_nodes__edges.length;  ++i)
+		all_graph_nodes__edges[i].length = 0;
+	for (let i = all_graph_nodes__edges.length;  i < connectionses.length;  ++i)
 		all_graph_nodes__edges.push([]);
-	all_graph_nodes__edges.length = all_graph_edges__indx+1; // Remove excess if they exist
+	all_graph_nodes__edges.length = connectionses.length; // Remove excess if they exist
 	
 	for (let i = 0, edge_indx = 0;  i < connectionses.length;  ++i){
 		for (let connected_edge of connectionses[i]){
