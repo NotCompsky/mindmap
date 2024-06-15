@@ -22,6 +22,7 @@
 <div id="graph-btn-container">
 	<button id="graph-btn--reset">Reset</button>
 	<input type="file" id="fileinput"/><label for="fileinput">Load</label>
+	<button id="save_btn">Save</button>
 </div>
 <div id="nodecontent_container">
 	<button id="nodecontent_save">Update node</button>
@@ -131,13 +132,13 @@ const init_graph = (gl, vertexShader_src, fragmentShader_src) => {
 const max_line_length = 50;
 
 
-const save_as_fn = () => {
+document.getElementById("save_btn").addEventListener("pointerup", () => {
 	const all_graph_nodes__xyr__compressed = new Array(all_graph_nodes__xyr.length);
 	for (let i = 0;  i < all_graph_nodes__xyr.length;  ++i){
 		const n = parseInt(all_graph_nodes__xyr[i] * 1000.0);
 		all_graph_nodes__xyr__compressed[i] = (n<<1)^(n>>31); // ZigZag encoding
 	}
-	const file = new Blob([JSON.stringify([contents,connectionses,all_graph_nodes__xyr__compressed])], {type:"application/json"});
+	const file = new Blob([JSON.stringify([contents,connectionses,all_graph_nodes__xyr__compressed,nodecolours,colours])], {type:"application/json"});
 	const a = document.createElement("a");
 	const url = URL.createObjectURL(file);
 	a.href = url;
@@ -148,7 +149,7 @@ const save_as_fn = () => {
 		document.body.removeChild(a);
 		window.URL.revokeObjectURL(url);
 	}, 1);
-}
+});
 const fileinput_btn = document.getElementById("fileinput");
 const title_from_content = content => {
 	let newline_indx = content.indexOf("\n")
