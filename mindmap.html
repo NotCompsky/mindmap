@@ -9,6 +9,12 @@
 .displaynone {
 	display:none!important;
 }
+#nodecontent_container {
+	width: calc(100vw - 100vh);
+	height: 100vh;
+	right:0;
+	position:absolute;
+}
 	</style>
 </head>
 <body>
@@ -17,6 +23,10 @@
 	<button id="graph-btn--reset">Reset</button>
 	<input type="file" id="fileinput"/><label for="fileinput">Load</label>
 </div>
+<div id="nodecontent_container">
+	<button id="nodecontent_save">Update node</button>
+	<pre id="nodecontent"></pre>
+</div>
 
 <canvas id="graph-canvas"></canvas>
 <canvas id="graph-text-canvas"></canvas>
@@ -24,6 +34,8 @@
 <script>
 "use strict";
 
+const nodecontent = document.getElementById("nodecontent");
+const nodecontent_save = document.getElementById("nodecontent_save");
 
 const underlying_buffer2 = [
 	1,0,0,0, 0,1,0,0, 0,0,1,0, 0,0,0,1, // graph__transformation_matrix
@@ -138,6 +150,14 @@ const save_as_fn = () => {
 	}, 1);
 }
 const fileinput_btn = document.getElementById("fileinput");
+const title_from_content = content => {
+	let newline_indx = content.indexOf("\n")
+	if (newline_indx === -1)
+		newline_indx = content.length;
+	if (newline_indx > max_line_length)
+		newline_indx = max_line_length;
+	return content.substr(0,newline_indx);
+};
 fileinput_btn.addEventListener("input", e => {
 	const file = e.target.files[0];
 	if (file){
@@ -154,13 +174,7 @@ fileinput_btn.addEventListener("input", e => {
 			
 			all_titles = new Array(contents.length);
 			for (let i = 0;  i < contents.length;  ++i){
-				const title = contents[i];
-				let newline_indx = title.indexOf("\n")
-				if (newline_indx === -1)
-					newline_indx = title.length;
-				if (newline_indx > max_line_length)
-					newline_indx = max_line_length;
-				all_titles[i] = title.substr(0,newline_indx);
+				all_titles[i] = title_from_content(contents[i]);
 			}
 			
 			process_entries();
@@ -178,12 +192,7 @@ function add_new_node(sibling_node_indx, content){
 	connectionses[sibling_node_indx].push(connectionses.length);
 	connectionses.push([sibling_node_indx]);
 	contents.push(content);
-	let title_newlineindx = content.indexOf("\n");
-	if (title_newlineindx === -1)
-		title_newlineindx = content.length;
-	if (title_newlineindx > max_line_length)
-		title_newlineindx = max_line_length;
-	all_titles.push(content.substr(0,title_newlineindx));
+	all_titles.push(title_from_content(content));
 	all_graph_nodes__xyr.push(
 		all_graph_nodes__xyr[sibling_node_indx*3+0]-sibling_halfr,
 		all_graph_nodes__xyr[sibling_node_indx*3+1]+sibling_halfr,
@@ -638,6 +647,9 @@ void main(){
 				d3__currently_selected = d3__currently_selected__last_tmp_value;
 				unhighlight_hovered_nodes();
 				highlight_node(d3__currently_selected,0,eventobj.ctrlKey);
+				
+				nodecontent.innerText = contents[d3__currently_selected];
+				nodecontent.contentEditable = true;
 			}
 		
 		}
@@ -648,11 +660,28 @@ void main(){
 		draw_graph_frame_or_polygon_replacement();
 	});
 	
+	nodecontent_save.addEventListener("pointerup", ()=>{
+		const all_highlighted_nodes = graph__highlighted_nodes[0][1];
+		if (all_highlighted_nodes.length === 1){
+			const nodeindx = all_highlighted_nodes[0];
+			nodecontent_save.disabled = true;
+			console.log("contents", nodeindx, nodecontent.innerText);
+			contents[nodeindx] = nodecontent.innerText;
+			all_titles[nodeindx] = title_from_content(contents[nodeindx]);
+			process_entries();
+			draw_graph_frame_or_polygon_replacement();
+			nodecontent_save.disabled = false;
+		} else {
+			nodecontent.innerText = "NO! Select exactly 1 node\n"+nodecontent.innerText;
+		}
+	});
+	
 	graph_canvas.addEventListener("pointerup", eventobj => {
 		d3__currently_selected = null;
 		clicked_on_region_indx = -1;
 		const [x,y] = get_canvas_coords_from_pointer_event(eventobj);
 		if (graph__hasnt_moved_pointer_since_clicking && (d3__currently_selected__last_tmp_value===null)){
+			nodecontent.contentEditable = false;
 			unhighlight_all_nodes();
 		}
 	});
