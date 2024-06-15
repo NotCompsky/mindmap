@@ -26,6 +26,10 @@
 
 
 const underlying_buffer2 = [
+	1,0,0,0, 0,1,0,0, 0,0,1,0, 0,0,0,1, // graph__transformation_matrix
+	
+	
+	
 	0,0,0,0, // Hidden
 	0,0,0,0,
 	
@@ -322,7 +326,7 @@ const dl_text_as_file = (filename, text) => {
 
 var all_graph_nodes__matrixmults;
 var all_graph_nodes__colours;
-const graph__transformation_matrix = [1,0,0,0, 0,1,0,0, 0,0,1,0, 0,0,0,1];
+const graph__transformation_matrix = underlying_buffer2;
 
 const get_canvas_coords_from_pointer_event = (eventobj) => {
 	const rect = eventobj.currentTarget.getBoundingClientRect();
@@ -364,7 +368,7 @@ const set_graph_transformation = (scale, x, y) => {
 	update_graph_transformation();
 };
 const update_graph_transformation = () => {
-	graph_gl.uniformMatrix4fv(graph_gl_u_graphmatrixmult, false, graph__transformation_matrix);
+	graph_gl.uniform4fv(graph_gl_u_graphmatrixmult, underlying_buffer2);
 };
 
 var graph_gl__a_nodepositionmatrices_buf;
@@ -516,22 +520,28 @@ document.addEventListener("DOMContentLoaded", () => {
 		graph_gl,
 		`#version 300 es
 precision mediump float;
-layout(location=0)in vec4 a;layout(location=1)in vec4 b;uniform mat4 u;out vec4 v_colour;void main(){gl_Position=u*a;v_colour=b;}`,
+
+layout(location=0)in vec4 a;
+layout(location=1)in float b;
+uniform vec4 u[56];
+out float v_colour;
+void main(){
+	gl_Position=mat4(u[0], u[1], u[2], u[3])*a;
+	v_colour=b;
+}`,
 		`#version 300 es
 precision mediump float;
 
-uniform vec4 colours[52];
+uniform vec4 u[56];
 precision mediump float;
 in float v_colour;
 out vec4 c;
 void main(){
 	int is_light_theme = 0;
-	c=colours[2*int(v_colour) + is_light_theme];
+	c=u[4 + 2*int(v_colour) + is_light_theme];
 }`
 	);
 	
-	graph_gl.uniform4fv(graph_gl.getUniformLocation(graph_gl_program, "colours"), underlying_buffer2);
-		
 	graph_gl.disable(graph_gl.DEPTH_TEST);
 	graph_gl_u_graphmatrixmult = graph_gl.getUniformLocation(graph_gl_program, "u");
 	update_graph_transformation();
@@ -930,11 +940,15 @@ const unhighlight_all_nodes = () => {
 };
 var is_dark_theme = 1;
 const graph__reset_node_colours = () => {
-	for (let i = 0;  i < all_graph_nodes__colours.length;  ++i){
-		all_graph_nodes__colours[i] = 1; // (1,1,1,1) if dark theme, else all 0 except opacity
+	all_graph_nodes__colours.fill(8);
+	let colouroffset = 0;
+	for (;  colouroffset < n_graph_edges*6;  ++colouroffset){
+		all_graph_nodes__colours[colouroffset] = 2;
 	}
-	for (let i = n_graph_edges*6;  i < all_graph_nodes__colours.length;  ++i){
-		all_graph_nodes__colours[i] = 8; // NOTE: No need to worry about opacity because opacity blending has not been enabled
+	for (let i = 0;  i < nodecolours.length;  ++i){
+		for (let j = 0;  j < 24;  ++j)
+			all_graph_nodes__colours[colouroffset + j] = 1+(nodecolours[i]%26);
+		colouroffset += 24;
 	}
 	set_highlighted_node_colours();
 };
