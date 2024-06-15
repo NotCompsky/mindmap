@@ -15,7 +15,7 @@
 	right:1em;
 	position:absolute;
 }
-#siblings_container, #siblings_adder_container, #onlyusedincss1 {
+#siblings_container, #siblings_adder_container, #nodecontent_createsibling_input, #onlyusedincss1 {
 	outline:1px solid red;
 	max-height:40vh;
 	overflow-y:scroll;
@@ -50,6 +50,7 @@ p { /* Used by "Graph Editor" UI in inline.js AND nodecontent here */
 		<div id="siblings_adder_list"></div>
 		<input id="node_select_sibling1" type="text" placeholder="Search..." disabled></input>
 	</div>
+	<button id="nodecontent_createsibling_input">Create Sibling</button>
 	<div id="onlyusedincss1">
 		<h3>Content:</h3>
 		<p id="nodecontent"></p>
@@ -100,6 +101,7 @@ const get_regexp_from_user_input_event = eventobj => {
 
 const nodecontent = document.getElementById("nodecontent");
 const nodecontent_save = document.getElementById("nodecontent_save");
+const nodecontent_createsibling_input = document.getElementById("nodecontent_createsibling_input");
 const nodecontent_colourgroup_input = document.getElementById("nodecontent_colourgroup_input");
 const nodecontent_size_input = document.getElementById("nodecontent_size_input");
 const siblings_list = document.getElementById("siblings_list");
@@ -722,20 +724,6 @@ void main(){
 		[d3__svg__clickedat_x, d3__svg__clickedat_y] = get_canvas_coords_from_pointer_event(eventobj);
 		d3__currently_selected__last_tmp_value = node_containing_coords(d3__svg__clickedat_x, d3__svg__clickedat_y);
 		
-		if ((eventobj.buttons&2) === 2){
-			// Right click
-			
-			const new_content = prompt("New content");
-			if (new_content){
-				add_new_node(d3__currently_selected__last_tmp_value, new_content);
-								
-				d3__currently_selected = all_titles.length - 1;
-				
-				process_entries();
-				draw_graph_frame__text_overlay();
-			}
-		} else {
-		
 		graph__hasnt_moved_pointer_since_clicking = 1;
 			if (d3__currently_selected__last_tmp_value !== null){
 				d3__currently_selected = d3__currently_selected__last_tmp_value;
@@ -746,6 +734,7 @@ void main(){
 				nodecontent.contentEditable = true;
 				node_select_sibling1.disabled = false;
 				nodecontent_save.disabled = false;
+				nodecontent_createsibling_input.disabled = false;
 				nodecontent_colourgroup_input.disabled = false;
 				nodecontent_size_input.disabled = false;
 				currently_displaying_node_indx = d3__currently_selected;
@@ -759,8 +748,6 @@ void main(){
 				nodecontent_colourgroup_input.value = nodecolours[d3__currently_selected];
 				nodecontent_size_input.value = parseInt(all_graph_nodes__xyr[3*d3__currently_selected+2]*1000.0);
 			}
-		
-		}
 	});
 	
 	document.getElementById("graph-btn--reset").addEventListener("pointerdown", ()=>{
@@ -783,6 +770,11 @@ void main(){
 			nodecontent.innerText = "NO! Select exactly 1 node\n"+nodecontent.innerText;
 		}
 	});
+	nodecontent_createsibling_input.addEventListener("pointerup", ()=>{
+		add_new_node(currently_displaying_node_indx, "New Node");
+		process_entries();
+		draw_graph_frame();
+	});
 	
 	graph_canvas.addEventListener("pointerup", eventobj => {
 		d3__currently_selected = null;
@@ -792,6 +784,7 @@ void main(){
 			nodecontent.contentEditable = false;
 			node_select_sibling1.disabled = true;
 			nodecontent_save.disabled = true;
+			nodecontent_createsibling_input.disabled = true;
 			nodecontent_colourgroup_input.disabled = true;
 			nodecontent_size_input.disabled = true;
 			nodecontent.innerText = "";
