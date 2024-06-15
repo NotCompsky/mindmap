@@ -15,6 +15,12 @@
 	right:0;
 	position:absolute;
 }
+#siblings_container {
+	outline:1px solid red;
+	margin:1em;
+	max-height:50vh;
+	overflow-y:scroll;
+}
 p { /* Used by "Graph Editor" UI in inline.js AND nodecontent here */
 	overflow-wrap:break-word;
 	word-wrap:break-word;
@@ -31,6 +37,9 @@ p { /* Used by "Graph Editor" UI in inline.js AND nodecontent here */
 </div>
 <div id="nodecontent_container">
 	<button id="nodecontent_save">Update node</button>
+	<div id="siblings_container">
+		<div id="siblings_list"></div>
+	</div>
 	<p id="nodecontent"></p>
 </div>
 
@@ -42,6 +51,7 @@ p { /* Used by "Graph Editor" UI in inline.js AND nodecontent here */
 
 const nodecontent = document.getElementById("nodecontent");
 const nodecontent_save = document.getElementById("nodecontent_save");
+const siblings_list = document.getElementById("siblings_list");
 
 const underlying_buffer2 = [
 	1,0,0,0, 0,1,0,0, 0,0,1,0, 0,0,0,1, // graph__transformation_matrix
@@ -169,6 +179,7 @@ document.getElementById("find_btn").addEventListener("pointerup", () => {
 });
 const fileinput_btn = document.getElementById("fileinput");
 const title_from_content = content => {
+	content = content.normalize("NFD").replace(/[\u0300-\u036f]/g, "").replaceAll(/[^ A-Za-z0-9(),'/&-]/g,"");
 	let newline_indx = content.indexOf("\n")
 	if (newline_indx === -1)
 		newline_indx = content.length;
@@ -229,6 +240,14 @@ var all_graph_nodes__xyr = [0.0,0.0,0.1, 0.2,0.2,0.1];
 //const all_graph_nodes__xyr = [0,0,100, 500,500,50];
 
 function process_entries(){
+	{
+		let s = "<option value=\"\">NONE</option>";
+		for (let i = 0;  i < all_titles.length;  ++i){
+			s += "<option value=\""+i+"\">"+all_titles[i]+"</option>"; // encodeURIComponent is used as an approximation for HTML encoding, since native HTML encoding doesn't seem to exist!
+		}
+		document.getElementById("all_node_names").innerHTML = s;
+	}
+	
 	n_graph_edges = 0;
 	for (let i = 0;  i < connectionses.length;  ++i){
 		n_graph_edges += connectionses[i].length;
@@ -670,6 +689,13 @@ void main(){
 				
 				nodecontent.innerText = contents[d3__currently_selected];
 				nodecontent.contentEditable = true;
+				
+				let siblings_list_innerHTML = "";
+				for (let nodeindx of connectionses[d3__currently_selected]){
+					siblings_list_innerHTML += "<div>"+all_titles[nodeindx]+" <button data-i=\""+nodeindx+"\">Delete</button></div>";
+				}
+				siblings_list.innerHTML = siblings_list_innerHTML;
+				siblings_list.dataset.i = d3__currently_selected;
 			}
 		
 		}
@@ -785,6 +811,19 @@ void main(){
 			draw_graph_frame();
 		}
 	}, 1000); // Every second, check if window has been resized. Doing it on "resize" event might trigger it hundreds of times if the window is being resized by mouse*/
+	
+	document.getElementById("siblings_list").addEventListener("pointerup", e=>{
+		const tgt = e.target;
+		if (tgt.parentNode.parentNode === siblings_list){
+			const nodeindx1 = parseInt(siblings_list.dataset.i);
+			const nodeindx2 = parseInt(tgt.dataset.i);
+			connectionses[nodeindx1] = connectionses[nodeindx1].filter(x => x !== nodeindx2);
+			connectionses[nodeindx2] = connectionses[nodeindx2].filter(x => x !== nodeindx1);
+			process_entries();
+			draw_graph_frame();
+			tgt.parentNode.remove();
+		}
+	});
 });
 
 const graph__highlighted_nodes = [
