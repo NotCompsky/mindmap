@@ -15,10 +15,10 @@
 	right:0;
 	position:absolute;
 }
-#siblings_container {
+#siblings_container, #siblings_adder_container {
 	outline:1px solid red;
 	margin:1em;
-	max-height:50vh;
+	max-height:40vh;
 	overflow-y:scroll;
 }
 p { /* Used by "Graph Editor" UI in inline.js AND nodecontent here */
@@ -40,6 +40,10 @@ p { /* Used by "Graph Editor" UI in inline.js AND nodecontent here */
 	<div id="siblings_container">
 		<div id="siblings_list"></div>
 	</div>
+	<div id="siblings_adder_container">
+		<div id="siblings_adder_list"></div>
+		<input id="node_select_sibling1" type="text" placeholder="Search..." disabled></input>
+	</div>
 	<p id="nodecontent"></p>
 </div>
 
@@ -49,9 +53,45 @@ p { /* Used by "Graph Editor" UI in inline.js AND nodecontent here */
 <script>
 "use strict";
 
+const get_regexp_from_user_input_event = eventobj => {
+	let str = eventobj.target.value; // see https://stackoverflow.com/questions/990904/remove-accents-diacritics-in-a-string-in-javascript
+	let regexp = null;
+	if (str.length >= 2){
+	let flags = "";
+	if (str.charCodeAt(0) * str.charCodeAt(str.length-1) == 2209){ // "/".charCode == 47 which is a prime, 2209==49*49
+		str = str.substr(1,str.length-2); // /foobar/ -> foobar  NOTE: /foo\/bar/ -> RegExp("foo\/bar") -> RegExp("foo/bar") due to JavaScript ignoring escapes on non-standard characters
+	} else {
+		flags = "i";
+		str = str.trim(); // Remove whitespace at start and end
+		
+		for (let i = 0;  i < str.length;  ++i){
+			const thischar = str.charCodeAt(i);
+			if ((64 < thischar) && (thischar < 91)){ // str[i] in [A,Z]
+				flags = "";
+				if ((i+1 === str.length) || (
+					(64 < str.charCodeAt(i+1)) && (str.charCodeAt(i+1) < 91)
+				) || (
+					str.charCodeAt(i+1) === 32 // space
+				)){
+					str = str.substr(0,i+1) + "[a-z]* ?" + str.substr(i+1);
+					i += 8;
+				}
+			}
+		}
+	}
+	try {
+		regexp = new RegExp(str, flags);
+	} catch(e){
+		regexp = new RegExp(str.replace(/[/\-\\^$*+?.()|[\]{}]/g, '\\$&'), "i");
+	}
+	}
+	return regexp;
+};
+
 const nodecontent = document.getElementById("nodecontent");
 const nodecontent_save = document.getElementById("nodecontent_save");
 const siblings_list = document.getElementById("siblings_list");
+const siblings_adder_list = document.getElementById("siblings_adder_list");
 
 const underlying_buffer2 = [
 	1,0,0,0, 0,1,0,0, 0,0,1,0, 0,0,0,1, // graph__transformation_matrix
@@ -240,13 +280,13 @@ var all_graph_nodes__xyr = [0.0,0.0,0.1, 0.2,0.2,0.1];
 //const all_graph_nodes__xyr = [0,0,100, 500,500,50];
 
 function process_entries(){
-	{
+	/*{
 		let s = "<option value=\"\">NONE</option>";
 		for (let i = 0;  i < all_titles.length;  ++i){
 			s += "<option value=\""+i+"\">"+all_titles[i]+"</option>"; // encodeURIComponent is used as an approximation for HTML encoding, since native HTML encoding doesn't seem to exist!
 		}
 		document.getElementById("all_node_names").innerHTML = s;
-	}
+	}*/
 	
 	n_graph_edges = 0;
 	for (let i = 0;  i < connectionses.length;  ++i){
@@ -333,6 +373,9 @@ function process_entries(){
 	graph__reset_node_colours();
 }
 
+
+
+var currently_displaying_node_indx = -1;
 
 
 let d3__svg__clickedat_x;
@@ -689,13 +732,14 @@ void main(){
 				
 				nodecontent.innerText = contents[d3__currently_selected];
 				nodecontent.contentEditable = true;
+				node_select_sibling1.disabled = false;
+				currently_displaying_node_indx = d3__currently_selected;
 				
 				let siblings_list_innerHTML = "";
 				for (let nodeindx of connectionses[d3__currently_selected]){
 					siblings_list_innerHTML += "<div>"+all_titles[nodeindx]+" <button data-i=\""+nodeindx+"\">Delete</button></div>";
 				}
 				siblings_list.innerHTML = siblings_list_innerHTML;
-				siblings_list.dataset.i = d3__currently_selected;
 			}
 		
 		}
@@ -728,6 +772,8 @@ void main(){
 		const [x,y] = get_canvas_coords_from_pointer_event(eventobj);
 		if (graph__hasnt_moved_pointer_since_clicking && (d3__currently_selected__last_tmp_value===null)){
 			nodecontent.contentEditable = false;
+			node_select_sibling1.disabled = true;
+			currently_displaying_node_indx = -1;
 			unhighlight_all_nodes();
 		}
 	});
@@ -812,13 +858,42 @@ void main(){
 		}
 	}, 1000); // Every second, check if window has been resized. Doing it on "resize" event might trigger it hundreds of times if the window is being resized by mouse*/
 	
-	document.getElementById("siblings_list").addEventListener("pointerup", e=>{
+
+	const node_select_sibling1 = document.getElementById("node_select_sibling1");
+	node_select_sibling1.addEventListener("input", eventobj => {
+		let siblings_adder_list_innerHTML = "";
+		const pattern = get_regexp_from_user_input_event(eventobj);
+		if (pattern !== null){
+			const matched_node_indices = [];
+			for (let i = 0;  i < contents.length;  ++i){
+				if (contents[i].match(pattern) !== null){
+					if (i !== currently_displaying_node_indx)
+						matched_node_indices.push(i);
+				}
+			}
+			
+			for (let nodeindx of matched_node_indices){
+				siblings_adder_list_innerHTML += "<div>"+all_titles[nodeindx]+" <button data-i=\""+nodeindx+"\">Add</button></div>";
+			}
+		}
+		siblings_adder_list.innerHTML = siblings_adder_list_innerHTML;
+	});
+	document.getElementById("nodecontent_container").addEventListener("pointerup", e=>{
 		const tgt = e.target;
-		if (tgt.parentNode.parentNode === siblings_list){
-			const nodeindx1 = parseInt(siblings_list.dataset.i);
+		if (tgt.parentNode.parentNode === siblings_adder_list){
 			const nodeindx2 = parseInt(tgt.dataset.i);
-			connectionses[nodeindx1] = connectionses[nodeindx1].filter(x => x !== nodeindx2);
-			connectionses[nodeindx2] = connectionses[nodeindx2].filter(x => x !== nodeindx1);
+			if (!connectionses[currently_displaying_node_indx].includes(nodeindx2)){
+				connectionses[currently_displaying_node_indx].push(nodeindx2);
+				connectionses[nodeindx2                     ].push(currently_displaying_node_indx);
+				process_entries();
+				draw_graph_frame();
+				siblings_list.innerHTML += "<div>"+all_titles[nodeindx2]+" <button data-i=\""+nodeindx2+"\">Delete</button></div>";
+			}
+		}
+		if (tgt.parentNode.parentNode === siblings_list){
+			const nodeindx2 = parseInt(tgt.dataset.i);
+			connectionses[currently_displaying_node_indx] = connectionses[currently_displaying_node_indx].filter(x => x !== nodeindx2);
+			connectionses[nodeindx2]                      = connectionses[nodeindx2                     ].filter(x => x !== currently_displaying_node_indx);
 			process_entries();
 			draw_graph_frame();
 			tgt.parentNode.remove();
