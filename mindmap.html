@@ -10,16 +10,16 @@
 	display:none!important;
 }
 #nodecontent_container {
-	width: calc(100vw - 100vh);
+	width: calc(100vw - 100vh - 2em);
 	height: 100vh;
-	right:0;
+	right:1em;
 	position:absolute;
 }
 #siblings_container, #siblings_adder_container, #onlyusedincss1 {
 	outline:1px solid red;
-	margin:1em;
 	max-height:40vh;
 	overflow-y:scroll;
+	margin-top:1em;
 }
 p { /* Used by "Graph Editor" UI in inline.js AND nodecontent here */
 	overflow-wrap:break-word;
@@ -46,7 +46,7 @@ p { /* Used by "Graph Editor" UI in inline.js AND nodecontent here */
 		<div id="siblings_list"></div>
 	</div>
 	<div id="siblings_adder_container">
-		<h3>Add New Siblings:</h3>
+		<h3>Add Link To Sibling:</h3>
 		<div id="siblings_adder_list"></div>
 		<input id="node_select_sibling1" type="text" placeholder="Search..." disabled></input>
 	</div>
