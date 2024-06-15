@@ -27,6 +27,7 @@ p { /* Used by "Graph Editor" UI in inline.js AND nodecontent here */
 	<button id="graph-btn--reset">Reset</button>
 	<input type="file" id="fileinput"/><label for="fileinput">Load</label>
 	<button id="save_btn">Save</button>
+	<button id="find_btn">Find</button>
 </div>
 <div id="nodecontent_container">
 	<button id="nodecontent_save">Update node</button>
@@ -153,6 +154,18 @@ document.getElementById("save_btn").addEventListener("pointerup", () => {
 		document.body.removeChild(a);
 		window.URL.revokeObjectURL(url);
 	}, 1);
+});
+document.getElementById("find_btn").addEventListener("pointerup", () => {
+	const s = prompt("Pattern");
+	const pattern = new RegExp(s);
+	const tohighlightnodes = [];
+	for (let i = 0;  i < contents.length;  ++i){
+		if (contents[i].match(pattern)){
+			tohighlightnodes.push(i);
+		}
+	}
+	highlight_intersect(tohighlightnodes, 0);
+	draw_graph_frame();
 });
 const fileinput_btn = document.getElementById("fileinput");
 const title_from_content = content => {
@@ -919,6 +932,19 @@ const update_highlighted_node_coords = () => {
 	}
 	
 	set_graph_node_coords(all_graph_nodes__matrixmults);
+};
+const highlight_node_intersect__core = (node_indx, highlight_indx) => {
+	graph__highlighted_nodes[highlight_indx  ][1].push(node_indx);
+	graph__highlighted_nodes[highlight_indx+1][1] = graph__highlighted_nodes[highlight_indx+1][1].filter(x => all_graph_nodes__connections[node_indx].includes(x));
+	graph__highlighted_nodes[highlight_indx  ][2] = graph__highlighted_nodes[highlight_indx  ][2].concat(all_graph_nodes__edges[node_indx]).filter(edge_indx =>
+		graph__highlighted_nodes[highlight_indx+1][1].includes(all_graph_edges__ab[2*edge_indx]) ||
+		graph__highlighted_nodes[highlight_indx+1][1].includes(all_graph_edges__ab[2*edge_indx+1])
+	);
+};
+const highlight_intersect = (node_indices, highlight_indx) => {
+	graph__highlighted_nodes[highlight_indx][1] = [];
+	for (let node_indx of node_indices)
+		highlight_node_intersect__core(node_indx, highlight_indx);
 };
 const highlight_node__sort_out_arrs = (node_indx, highlight_indx, ctrl_clicked) => {
 	if (ctrl_clicked && (graph__highlighted_nodes[highlight_indx][1].length!==0)){
