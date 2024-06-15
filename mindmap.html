@@ -15,6 +15,10 @@
 	right:0;
 	position:absolute;
 }
+p { /* Used by "Graph Editor" UI in inline.js AND nodecontent here */
+	overflow-wrap:break-word;
+	word-wrap:break-word;
+}
 	</style>
 </head>
 <body>
@@ -26,7 +30,7 @@
 </div>
 <div id="nodecontent_container">
 	<button id="nodecontent_save">Update node</button>
-	<pre id="nodecontent"></pre>
+	<p id="nodecontent"></p>
 </div>
 
 <canvas id="graph-canvas"></canvas>
