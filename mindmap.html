@@ -759,6 +759,7 @@ void main(){
 			all_graph_nodes__xyr[currently_displaying_node_indx*3+1]+2.0*Math.sin(t)*sibling_halfr,
 			sibling_halfr
 		);
+		nodecolours.push(nodecolours[currently_displaying_node_indx]);
 		process_entries();
 		draw_graph_frame();
 	});
