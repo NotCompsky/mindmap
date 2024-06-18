@@ -1057,7 +1057,7 @@ const update_highlighted_node_coords = () => {
 };
 const highlight_node_intersect__core = (node_indx, highlight_indx) => {
 	graph__highlighted_nodes[highlight_indx  ][1].push(node_indx);
-	graph__highlighted_nodes[highlight_indx+1][1] = graph__highlighted_nodes[highlight_indx+1][1].filter(x => all_graph_nodes__connections[node_indx].includes(x));
+	graph__highlighted_nodes[highlight_indx+1][1] = graph__highlighted_nodes[highlight_indx+1][1].filter(x => connectionses[node_indx].includes(x));
 	graph__highlighted_nodes[highlight_indx  ][2] = graph__highlighted_nodes[highlight_indx  ][2].concat(all_graph_nodes__edges[node_indx]).filter(edge_indx =>
 		graph__highlighted_nodes[highlight_indx+1][1].includes(all_graph_edges__ab[2*edge_indx]) ||
 		graph__highlighted_nodes[highlight_indx+1][1].includes(all_graph_edges__ab[2*edge_indx+1])
