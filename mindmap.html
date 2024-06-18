@@ -224,7 +224,7 @@ document.getElementById("find_btn").addEventListener("pointerup", () => {
 	const pattern = new RegExp(s);
 	const tohighlightnodes = [];
 	for (let i = 0;  i < contents.length;  ++i){
-		if (contents[i].match(pattern)){
+		if (contents[i].match(pattern) !== null){
 			tohighlightnodes.push(i);
 		}
 	}
