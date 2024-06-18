@@ -233,7 +233,7 @@ document.getElementById("find_btn").addEventListener("pointerup", () => {
 });
 const fileinput_btn = document.getElementById("fileinput");
 const title_from_content = content => {
-	content = content.normalize("NFD").replace(/[\u0300-\u036f]/g, "").replaceAll(/[^ A-Za-z0-9(),'/&-]/g,"");
+	content = content.normalize("NFD").replace(/[\u0300-\u036f]/g, "").replaceAll(/[^\n A-Za-z0-9(),'/&-]/g,"");
 	let newline_indx = content.indexOf("\n")
 	if (newline_indx === -1)
 		newline_indx = content.length;
