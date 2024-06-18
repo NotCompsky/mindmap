@@ -280,14 +280,6 @@ var all_graph_nodes__xyr = [0.0,0.0,0.1, 0.2,0.2,0.1];
 //const all_graph_nodes__xyr = [0,0,100, 500,500,50];
 
 function process_entries(){
-	/*{
-		let s = "<option value=\"\">NONE</option>";
-		for (let i = 0;  i < all_titles.length;  ++i){
-			s += "<option value=\""+i+"\">"+all_titles[i]+"</option>"; // encodeURIComponent is used as an approximation for HTML encoding, since native HTML encoding doesn't seem to exist!
-		}
-		document.getElementById("all_node_names").innerHTML = s;
-	}*/
-	
 	n_graph_edges = 0;
 	for (let i = 0;  i < connectionses.length;  ++i){
 		n_graph_edges += connectionses[i].length;
@@ -746,7 +738,6 @@ void main(){
 		if (all_highlighted_nodes.length === 1){
 			const nodeindx = all_highlighted_nodes[0];
 			nodecontent_save.disabled = true;
-			console.log("contents", nodeindx, nodecontent.innerText);
 			contents[nodeindx] = nodecontent.innerText;
 			all_titles[nodeindx] = title_from_content(contents[nodeindx]);
 			process_entries();
