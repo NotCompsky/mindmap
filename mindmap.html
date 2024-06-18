@@ -932,10 +932,12 @@ const draw_graph_frame__text_overlay = () => {
 			const r = all_graph_nodes__xyr[3*node_indx+2] * graph__transformation_matrix[0];
 			let [x,y] = matrix_44_apply_to_v2(graph__transformation_matrix, all_graph_nodes__xyr[3*node_indx], all_graph_nodes__xyr[3*node_indx+1]);
 			x -= r*0.5;
-			graph_2dcanvas.fillStyle = colours[nodecolours[node_indx]];
-			graph_2dcanvas.font = `bold ${parseInt(r*graph_canvas_width*graph_text_size_multiplier)}px Arial`; // NOTE: Unfortunately there is no way to merely set the fontSize
-			graph_2dcanvas.strokeText(all_titles[node_indx], graph_canvas_width*(x+1)/2, graph_canvas_height*(-y+1)/2);
-			graph_2dcanvas.fillText(all_titles[node_indx], graph_canvas_width*(x+1)/2, graph_canvas_height*(-y+1)/2);
+			if ((x > -1.0) && (x < 1.0) && (y > -1.0) && (y < 1.0)){
+				graph_2dcanvas.fillStyle = colours[nodecolours[node_indx]];
+				graph_2dcanvas.font = `bold ${parseInt(r*graph_canvas_width*graph_text_size_multiplier)}px Arial`; // NOTE: Unfortunately there is no way to merely set the fontSize
+				graph_2dcanvas.strokeText(all_titles[node_indx], graph_canvas_width*(x+1)/2, graph_canvas_height*(-y+1)/2);
+				graph_2dcanvas.fillText(all_titles[node_indx], graph_canvas_width*(x+1)/2, graph_canvas_height*(-y+1)/2);
+			}
 		}
 	}
 	for (let node_indx of graph__highlighted_nodes[0][1]){
