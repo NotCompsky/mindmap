@@ -50,7 +50,7 @@ p { /* Used by "Graph Editor" UI in inline.js AND nodecontent here */
 		<div id="siblings_adder_list"></div>
 		<input id="node_select_sibling1" type="text" placeholder="Search..." disabled></input>
 	</div>
-	<button id="nodecontent_createsibling_input">Create Sibling</button>
+	<button id="nodecontent_createsibling_input">Add Child</button>
 	<div id="onlyusedincss1">
 		<h3>Content:</h3>
 		<p id="nodecontent"></p>
@@ -202,12 +202,7 @@ const max_line_length = 50;
 
 
 document.getElementById("save_btn").addEventListener("pointerup", () => {
-	const all_graph_nodes__xyr__compressed = new Array(all_graph_nodes__xyr.length);
-	for (let i = 0;  i < all_graph_nodes__xyr.length;  ++i){
-		const n = parseInt(all_graph_nodes__xyr[i] * 10000.0);
-		all_graph_nodes__xyr__compressed[i] = (n<<1)^(n>>31); // ZigZag encoding
-	}
-	const file = new Blob([JSON.stringify([contents,connectionses,all_graph_nodes__xyr__compressed,nodecolours,colours])], {type:"application/json"});
+	const file = new Blob([JSON.stringify([contents,all_parents,misc_connections,nodecolours,colours])], {type:"application/json"});
 	const a = document.createElement("a");
 	const url = URL.createObjectURL(file);
 	a.href = url;
@@ -241,19 +236,79 @@ const title_from_content = content => {
 		newline_indx = max_line_length;
 	return content.substr(0,newline_indx);
 };
+
+
+
+
+const process_node = (size, depth, angle_offset, angle_step, x, y, d, this_node_indx, parent_node_indx) => {
+	if (title_from_content(contents[this_node_indx]) === "useful tools")
+		console.log("process_node",this_node_indx,title_from_content(contents[this_node_indx]));
+	const sub_node_indices = d[this_node_indx];
+	const n_children = sub_node_indices.length;
+	
+	all_graph_nodes__xyr[this_node_indx*3  ] = x;
+	all_graph_nodes__xyr[this_node_indx*3+1] = y;
+	all_graph_nodes__xyr[this_node_indx*3+2] = 0.1*size;
+	
+	if (n_children !== 0){
+		let angle_offset_sub = angle_offset;
+		let angle_step_sub = angle_step/n_children;
+		let skip_ith_anglerange = -1;
+		if (depth === 1){
+			/// avoid top and bottom
+			angle_step_sub = angle_step/(n_children+2);
+			angle_offset_sub = angle_offset + angle_step_sub*0.5;
+			skip_ith_anglerange = (n_children-1)>>1;
+		}
+		let prev_ysub = null;
+		const size_sub = size/Math.sqrt(n_children);
+		const distance_from_root_sub = Math.sqrt(x*x + y*y) + size**0.5;
+		for (let i = 0;  i < sub_node_indices.length;  ++i){
+			const sub_node_indx = sub_node_indices[i];
+			if (i === skip_ith_anglerange)
+				angle_offset_sub += angle_step_sub;
+			if (sub_node_indx === parent_node_indx)
+				continue;
+			const x_sub = distance_from_root_sub*Math.sin(angle_offset_sub);
+			let y_sub = distance_from_root_sub*Math.cos(angle_offset_sub); // Begin at top, ensuring each 
+			if (prev_ysub !== null){
+				const text_size_sub = size_sub*0.01;
+				if ((prev_ysub < y_sub) && (y_sub < prev_ysub+text_size_sub))
+					y_sub = prev_ysub + text_size_sub;
+				else if ((prev_ysub-text_size_sub < y_sub) && (y_sub < prev_ysub))
+					y_sub = prev_ysub - text_size_sub;
+			}
+			process_node(size_sub, depth+1, angle_offset_sub, angle_step_sub, x_sub, y_sub, d, sub_node_indx, this_node_indx);
+			angle_offset_sub += angle_step_sub;
+			prev_ysub = y_sub;
+		}
+	}
+};
+
+
+
+
 fileinput_btn.addEventListener("input", e => {
 	const file = e.target.files[0];
 	if (file){
 		fileinput_btn.disabled = true;
 		const reader = new FileReader();
 		reader.addEventListener("load", (ee) => {
-			[contents, connectionses, all_graph_nodes__xyr, nodecolours, colours] = JSON.parse(ee.target.result);
+			[contents, all_parents, misc_connections, nodecolours, colours] = JSON.parse(ee.target.result);
 			
-			for (let i = 0;  i < all_graph_nodes__xyr.length;  ++i){
-				all_graph_nodes__xyr[i] = ((all_graph_nodes__xyr[i]>>1)^(-(all_graph_nodes__xyr[i]&1))) * 0.0001;
+			all_graph_nodes__xyr = new Float32Array(all_parents.length*3 + 3);
+			
+			connectionses.length = all_parents.length+1;
+			connectionses[0].length = 0;
+			for (let i = 0;  i < all_parents.length;  ++i)
+				connectionses[i+1] = [all_parents[i]];
+			for (let i = 0;  i < all_parents.length;  ++i)
+				connectionses[all_parents[i]].push(i+1);
+			process_node(1, 1, 0.0, 2.0*3.14152, 0.0, 0.0, connectionses, 0, 0);
+			
+			for (let i = 0;  i < misc_connections.length;  ++i){
+				connectionses[misc_connections[i]].push(misc_connections[i + 1 - ((i&1)<<1)]);
 			}
-			//for (let i = 0;  i < all_graph_nodes__xyr.length;  ++i)
-			//	all_graph_nodes__xyr[i] *= 0.001;
 			
 			all_titles = new Array(contents.length);
 			for (let i = 0;  i < contents.length;  ++i){
@@ -272,6 +327,8 @@ fileinput_btn.addEventListener("input", e => {
 
 var all_titles = ["ROOT","Example"];
 var contents = ["ROOT\nRight click this node to add children","Example"];
+var all_parents = [0];
+var misc_connections = [];
 var connectionses = [[1],[0]];
 var nodecolours = [0,0];
 var colours = ["#ff0000"];
@@ -280,11 +337,7 @@ var all_graph_nodes__xyr = [0.0,0.0,0.1, 0.2,0.2,0.1];
 //const all_graph_nodes__xyr = [0,0,100, 500,500,50];
 
 function process_entries(){
-	n_graph_edges = 0;
-	for (let i = 0;  i < connectionses.length;  ++i){
-		n_graph_edges += connectionses[i].length;
-	}
-	n_graph_edges /= 2;
+	n_graph_edges = all_parents.length + (misc_connections.length>>1);
 	
 	// all_graph_nodes__xyr = new Float32Array(all_entries.length*3);
 	all_graph_edges__xyr = new Float32Array(n_graph_edges * graph__edges__elements_per_edge);
@@ -297,37 +350,47 @@ function process_entries(){
 	}*/
 	
 	let all_graph_edges__indx = 0;
-	for (let i = 0, N = connectionses.length;  i < N;  ++i){
-		for (let connected_node of connectionses[i]){
-			if ((connected_node > i) && (connected_node < N)){
+	for (let i = 1; i <= all_parents.length;  ++i){
 				all_graph_edges__xyr[graph__edges__elements_per_edge*all_graph_edges__indx  ] = all_graph_nodes__xyr[3*i];
-				all_graph_edges__xyr[graph__edges__elements_per_edge*all_graph_edges__indx+1] = all_graph_nodes__xyr[3*connected_node];
+				all_graph_edges__xyr[graph__edges__elements_per_edge*all_graph_edges__indx+1] = all_graph_nodes__xyr[3*all_parents[i-1]];
 				all_graph_edges__xyr[graph__edges__elements_per_edge*all_graph_edges__indx+2] = all_graph_nodes__xyr[3*i+1];
-				all_graph_edges__xyr[graph__edges__elements_per_edge*all_graph_edges__indx+3] = all_graph_nodes__xyr[3*connected_node+1];
-				all_graph_edges__xyr[graph__edges__elements_per_edge*all_graph_edges__indx+4] = graph__line_width_given_node_radii(all_graph_nodes__xyr[3*i+2], all_graph_nodes__xyr[3*connected_node+2]);
+				all_graph_edges__xyr[graph__edges__elements_per_edge*all_graph_edges__indx+3] = all_graph_nodes__xyr[3*all_parents[i-1]+1];
+				all_graph_edges__xyr[graph__edges__elements_per_edge*all_graph_edges__indx+4] = graph__line_width_given_node_radii(all_graph_nodes__xyr[3*i+2], all_graph_nodes__xyr[3*all_parents[i-1]+2]);
 				
 				all_graph_edges__ab[2*all_graph_edges__indx  ] = i;
-				all_graph_edges__ab[2*all_graph_edges__indx+1] = connected_node;
+				all_graph_edges__ab[2*all_graph_edges__indx+1] = all_parents[i-1];
 				
 				++all_graph_edges__indx;
-			}
-		}
+	}
+	for (let i = 0;  i < misc_connections.length;  i+=2){
+				all_graph_edges__xyr[graph__edges__elements_per_edge*all_graph_edges__indx  ] = all_graph_nodes__xyr[3*misc_connections[i]];
+				all_graph_edges__xyr[graph__edges__elements_per_edge*all_graph_edges__indx+1] = all_graph_nodes__xyr[3*misc_connections[i+1]];
+				all_graph_edges__xyr[graph__edges__elements_per_edge*all_graph_edges__indx+2] = all_graph_nodes__xyr[3*misc_connections[i]+1];
+				all_graph_edges__xyr[graph__edges__elements_per_edge*all_graph_edges__indx+3] = all_graph_nodes__xyr[3*misc_connections[i+1]+1];
+				all_graph_edges__xyr[graph__edges__elements_per_edge*all_graph_edges__indx+4] = graph__line_width_given_node_radii(all_graph_nodes__xyr[3*i+2], all_graph_nodes__xyr[3*misc_connections[i+1]+2]);
+				
+				all_graph_edges__ab[2*all_graph_edges__indx  ] = misc_connections[i];
+				all_graph_edges__ab[2*all_graph_edges__indx+1] = misc_connections[i+1];
+				
+				++all_graph_edges__indx;
 	}
 	
 	for (let i = 0;  i < all_graph_nodes__edges.length;  ++i)
 		all_graph_nodes__edges[i].length = 0;
-	for (let i = all_graph_nodes__edges.length;  i < connectionses.length;  ++i)
+	for (let i = all_graph_nodes__edges.length;  i <= all_parents.length;  ++i)
 		all_graph_nodes__edges.push([]);
-	all_graph_nodes__edges.length = connectionses.length; // Remove excess if they exist
+	all_graph_nodes__edges.length = all_parents.length+1; // Remove excess if they exist
 	
-	for (let i = 0, edge_indx = 0;  i < connectionses.length;  ++i){
-		for (let connected_edge of connectionses[i]){
-			if (connected_edge > i){
+	let edge_indx = 0;
+	for (let i = 1;  i <= all_parents.length;  ++i){
 				all_graph_nodes__edges[i].push(edge_indx);
-				all_graph_nodes__edges[connected_edge].push(edge_indx);
+				all_graph_nodes__edges[all_parents[i-1]].push(edge_indx);
 				++edge_indx;
-			}
-		}
+	}
+	for (let i = 0;  i < misc_connections.length;  i+=2){
+				all_graph_nodes__edges[misc_connections[i  ]].push(edge_indx);
+				all_graph_nodes__edges[misc_connections[i+1]].push(edge_indx);
+				++edge_indx;
 	}
 	
 	let graph__1st_and_2nd_most_neighbours = 0;
@@ -749,16 +812,27 @@ void main(){
 	});
 	nodecontent_createsibling_input.addEventListener("pointerup", ()=>{
 		const sibling_halfr = all_graph_nodes__xyr[currently_displaying_node_indx*3+2];
+		const this_node_indx = all_titles.length;
 		connectionses[currently_displaying_node_indx].push(connectionses.length);
 		connectionses.push([currently_displaying_node_indx]);
+		all_parents.push(currently_displaying_node_indx);
 		contents.push("New Node");
 		all_titles.push(title_from_content("New Node"));
 		const t = 100.0*Date.now();
-		all_graph_nodes__xyr.push(
-			all_graph_nodes__xyr[currently_displaying_node_indx*3+0]+2.0*Math.cos(t)*sibling_halfr,
-			all_graph_nodes__xyr[currently_displaying_node_indx*3+1]+2.0*Math.sin(t)*sibling_halfr,
-			sibling_halfr
-		);
+		const all_graph_nodes__xyr__new = new Float32Array(all_graph_nodes__xyr.length + 3);
+		all_graph_nodes__xyr__new.set(all_graph_nodes__xyr);
+		all_graph_nodes__xyr__new[this_node_indx*3  ] = all_graph_nodes__xyr[currently_displaying_node_indx*3+0]+2.0*Math.cos(t)*sibling_halfr;
+		all_graph_nodes__xyr__new[this_node_indx*3+1] = all_graph_nodes__xyr[currently_displaying_node_indx*3+1]+2.0*Math.sin(t)*sibling_halfr;
+		
+		const this_node_size = all_graph_nodes__xyr[currently_displaying_node_indx*3+2]/Math.sqrt(connectionses[currently_displaying_node_indx].length);
+		for (let nodeindx of connectionses[currently_displaying_node_indx]){
+			if ((nodeindx !== 0) && (all_parents[nodeindx-1] === currently_displaying_node_indx)){
+				// is child of currently_displaying_node_indx
+				all_graph_nodes__xyr__new[nodeindx*3+2] = this_node_size;
+			}
+		}
+		
+		all_graph_nodes__xyr = all_graph_nodes__xyr__new;
 		nodecolours.push(nodecolours[currently_displaying_node_indx]);
 		process_entries();
 		draw_graph_frame();
@@ -887,6 +961,7 @@ void main(){
 		if (tgt.parentNode.parentNode === siblings_adder_list){
 			const nodeindx2 = parseInt(tgt.dataset.i);
 			if (!connectionses[currently_displaying_node_indx].includes(nodeindx2)){
+				misc_connections.push(currently_displaying_node_indx, nodeindx2);
 				connectionses[currently_displaying_node_indx].push(nodeindx2);
 				connectionses[nodeindx2                     ].push(currently_displaying_node_indx);
 				process_entries();
@@ -896,6 +971,15 @@ void main(){
 		}
 		if (tgt.parentNode.parentNode === siblings_list){
 			const nodeindx2 = parseInt(tgt.dataset.i);
+			for (let i = 0;  i < misc_connections.length;  i+=2){
+				if (
+					((misc_connections[i] === currently_displaying_node_indx) && (misc_connections[i+1] === nodeindx2                     )) ||
+					((misc_connections[i] === nodeindx2                     ) && (misc_connections[i+1] === currently_displaying_node_indx))
+				){
+					misc_connections = misc_connections.slice(0,i).concat(misc_connections.slice(i+2,misc_connections.length));
+					break;
+				}
+			}
 			connectionses[currently_displaying_node_indx] = connectionses[currently_displaying_node_indx].filter(x => x !== nodeindx2);
 			connectionses[nodeindx2]                      = connectionses[nodeindx2                     ].filter(x => x !== currently_displaying_node_indx);
 			process_entries();
