@@ -256,27 +256,29 @@ const process_node = (size, depth, angle_offset, angle_step, x, y, d, this_node_
 		let skip_ith_anglerange = -1;
 		if (depth === 1){
 			/// avoid top and bottom
-			angle_step_sub = angle_step/(n_children+2);
-			angle_offset_sub = angle_offset + angle_step_sub*0.5;
-			skip_ith_anglerange = (n_children-1)>>1;
+			angle_step_sub = angle_step/(n_children+8);
+			angle_offset_sub = angle_offset + 2.0*angle_step_sub;
+			skip_ith_anglerange = n_children>>1;
 		}
 		let prev_ysub = null;
+		let is_y_increasing = 2.0;
 		const size_sub = size/Math.sqrt(n_children);
 		const distance_from_root_sub = Math.sqrt(x*x + y*y) + size**0.5;
 		for (let i = 0;  i < sub_node_indices.length;  ++i){
 			const sub_node_indx = sub_node_indices[i];
 			if (i === skip_ith_anglerange)
-				angle_offset_sub += angle_step_sub;
+				angle_offset_sub += 4.0*angle_step_sub;
 			if (sub_node_indx === parent_node_indx)
 				continue;
 			const x_sub = distance_from_root_sub*Math.sin(angle_offset_sub);
 			let y_sub = distance_from_root_sub*Math.cos(angle_offset_sub); // Begin at top, ensuring each 
-			if (prev_ysub !== null){
-				const text_size_sub = size_sub*0.01;
-				if ((prev_ysub < y_sub) && (y_sub < prev_ysub+text_size_sub))
-					y_sub = prev_ysub + text_size_sub;
-				else if ((prev_ysub-text_size_sub < y_sub) && (y_sub < prev_ysub))
-					y_sub = prev_ysub - text_size_sub;
+			if ((prev_ysub !== null) && (depth > 2)){
+				if (is_y_increasing === 2.0){
+					is_y_increasing = 1 - ((y_sub<prev_ysub)<<1);
+				}
+				const text_size_sub = size_sub*0.2;
+				if ((is_y_increasing*prev_ysub < is_y_increasing*y_sub) && (is_y_increasing*y_sub < is_y_increasing*(prev_ysub+is_y_increasing*text_size_sub)))
+					y_sub += is_y_increasing*text_size_sub;
 			}
 			process_node(size_sub, depth+1, angle_offset_sub, angle_step_sub, x_sub, y_sub, d, sub_node_indx, this_node_indx);
 			angle_offset_sub += angle_step_sub;
