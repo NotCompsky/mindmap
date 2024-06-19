@@ -353,9 +353,10 @@ var all_graph_nodes__xyr = [0.0,0.0,0.1, 0.2,0.2,0.1];
 function process_entries(){
 	n_graph_edges = all_parents.length + (misc_connections.length>>1);
 	
-	// all_graph_nodes__xyr = new Float32Array(all_entries.length*3);
-	all_graph_edges__xyr = new Float32Array(n_graph_edges * graph__edges__elements_per_edge);
-	all_graph_edges__ab  = new Int32Array(n_graph_edges * 2); // Connected node IDs
+	if (n_graph_edges * 2 > all_graph_edges__ab.length){
+		all_graph_edges__xyr = new Float32Array(n_graph_edges * graph__edges__elements_per_edge);
+		all_graph_edges__ab  = new Int32Array(n_graph_edges * 2); // Connected node IDs
+	}
 	
 	/*for (let i = 0;  i < all_entries.length;  ++i){
 		all_graph_nodes__xyr[3*i+0] = all_entries[i].x;
@@ -418,16 +419,22 @@ function process_entries(){
 		const total_nodes = connectionses.length + graph__1st_and_2nd_most_neighbours;
 		const total_edges = n_graph_edges + graph__1st_and_2nd_most_neighbours;
 		
-		graph_gl__a_nodepositionmatrices_buf = graph_gl.createBuffer();
-		graph_gl.bindBuffer(graph_gl.ARRAY_BUFFER, graph_gl__a_nodepositionmatrices_buf);
-		graph_gl.bufferData(graph_gl.ARRAY_BUFFER, 192 * total_nodes + 48 * total_edges, graph_gl.DYNAMIC_DRAW); // Preallocate. 8 == sizeof(vec2) == sizeof(float) * 2, and 4 vec2 per node
-		
-		graph_gl__a_nodecolours_buf = graph_gl.createBuffer();
-		graph_gl.bindBuffer(graph_gl.ARRAY_BUFFER, graph_gl__a_nodecolours_buf);
-		graph_gl.bufferData(graph_gl.ARRAY_BUFFER, 384 * total_nodes + 96 * total_edges, graph_gl.DYNAMIC_DRAW); // Preallocate. 16 == sizeof(vec4) == sizeof(float) * 4, and 4 triangles per node, 3 colours per triangle
-		
-		all_graph_nodes__matrixmults = new Float32Array(48 * total_nodes + 12 * total_edges).fill(0); // 12 vec2 for each node (4 triangles)
-		all_graph_nodes__colours = new Float32Array(24 * total_nodes + 6 * total_edges).fill(0); // one colour per vertex
+		if (all_graph_nodes__colours.length < 24 * total_nodes + 6 * total_edges){
+			if (graph_gl__a_nodepositionmatrices_buf !== null){
+				graph_gl.deleteBuffer(graph_gl__a_nodepositionmatrices_buf);
+				graph_gl.deleteBuffer(graph_gl__a_nodecolours_buf);
+			}
+			graph_gl__a_nodepositionmatrices_buf = graph_gl.createBuffer();
+			graph_gl.bindBuffer(graph_gl.ARRAY_BUFFER, graph_gl__a_nodepositionmatrices_buf);
+			graph_gl.bufferData(graph_gl.ARRAY_BUFFER, 192 * total_nodes + 48 * total_edges, graph_gl.DYNAMIC_DRAW); // Preallocate. 8 == sizeof(vec2) == sizeof(float) * 2, and 4 vec2 per node
+			
+			graph_gl__a_nodecolours_buf = graph_gl.createBuffer();
+			graph_gl.bindBuffer(graph_gl.ARRAY_BUFFER, graph_gl__a_nodecolours_buf);
+			graph_gl.bufferData(graph_gl.ARRAY_BUFFER, 384 * total_nodes + 96 * total_edges, graph_gl.DYNAMIC_DRAW); // Preallocate. 16 == sizeof(vec4) == sizeof(float) * 4, and 4 triangles per node, 3 colours per triangle
+			
+			all_graph_nodes__matrixmults = new Float32Array(48 * total_nodes + 12 * total_edges).fill(0); // 12 vec2 for each node (4 triangles)
+			all_graph_nodes__colours = new Float32Array(24 * total_nodes + 6 * total_edges).fill(0); // one colour per vertex
+		}
 		
 		let matrix_indx = 0;
 		for (let i = 0;  i < n_graph_edges;  ++i, matrix_indx+=12){
@@ -473,7 +480,7 @@ const all_graph_nodes__edges = [];
 // NOTE: Cannot use fill() because it refers to the SAME object (so each element would point to the same array). Would use .fill(0).map(x => []) except it HALVES the FPS (probably because it tricks the compiler into optimising for an integer array)
 var n_graph_edges = 0;
 var all_graph_edges__xyr;
-var all_graph_edges__ab;
+var all_graph_edges__ab = new Int32Array(0); // for length property
 
 const dl_text_as_file = (filename, text) => {
 	const a = document.createElement("a");
@@ -485,7 +492,7 @@ const dl_text_as_file = (filename, text) => {
 };
 
 var all_graph_nodes__matrixmults;
-var all_graph_nodes__colours;
+var all_graph_nodes__colours = new Float32Array(0); // for length property
 const graph__transformation_matrix = underlying_buffer2;
 
 const get_canvas_coords_from_pointer_event = (eventobj) => {
@@ -531,7 +538,7 @@ const update_graph_transformation = () => {
 	graph_gl.uniform4fv(graph_gl_u_graphmatrixmult, underlying_buffer2);
 };
 
-var graph_gl__a_nodepositionmatrices_buf;
+var graph_gl__a_nodepositionmatrices_buf = null;
 const graph_outline_width__scaled = 0.001;
 const update_graph_node_coord__webgl = (matrix_indx, i) => {
 	const x = all_graph_nodes__xyr[3*i];
