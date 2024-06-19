@@ -830,8 +830,7 @@ void main(){
 			nodecontent_save.disabled = true;
 			contents[nodeindx] = nodecontent.innerText;
 			all_titles[nodeindx] = title_from_content(contents[nodeindx]);
-			process_entries();
-			draw_graph_frame_or_polygon_replacement();
+			draw_graph_frame__text_overlay();
 			nodecontent_save.disabled = false;
 		} else {
 			nodecontent.innerText = "NO! Select exactly 1 node\n"+nodecontent.innerText;
