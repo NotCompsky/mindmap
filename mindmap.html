@@ -299,7 +299,7 @@ const process_node = (size, depth, angle_offset, angle_step, x, y, d, this_node_
 };
 
 
-
+let spare_allgraphnodesxyr_space = 0;
 
 fileinput_btn.addEventListener("input", e => {
 	const file = e.target.files[0];
@@ -309,7 +309,8 @@ fileinput_btn.addEventListener("input", e => {
 		reader.addEventListener("load", (ee) => {
 			[contents, all_parents, misc_connections, nodecolours, colours] = JSON.parse(ee.target.result);
 			
-			all_graph_nodes__xyr = new Float32Array(all_parents.length*3 + 3);
+			spare_allgraphnodesxyr_space = 300;
+			all_graph_nodes__xyr = new Float32Array(all_parents.length*3 + 3 + spare_allgraphnodesxyr_space);
 			
 			connectionses.length = all_parents.length+1;
 			connectionses[0].length = 0;
@@ -845,12 +846,16 @@ void main(){
 		contents.push("New Node");
 		all_titles.push(title_from_content("New Node"));
 		const t = 100.0*Date.now();
-		const all_graph_nodes__xyr__new = new Float32Array(all_graph_nodes__xyr.length + 3);
-		all_graph_nodes__xyr__new.set(all_graph_nodes__xyr);
-		all_graph_nodes__xyr__new[this_node_indx*3  ] = all_graph_nodes__xyr[currently_displaying_node_indx*3+0]+2.0*Math.cos(t)*sibling_halfr;
-		all_graph_nodes__xyr__new[this_node_indx*3+1] = all_graph_nodes__xyr[currently_displaying_node_indx*3+1]+2.0*Math.sin(t)*sibling_halfr;
 		
-		all_graph_nodes__xyr = all_graph_nodes__xyr__new;
+		if (spare_allgraphnodesxyr_space === 0){
+			spare_allgraphnodesxyr_space = 300;
+			const all_graph_nodes__xyr__new = new Float32Array(all_graph_nodes__xyr.length + 3 + spare_allgraphnodesxyr_space);
+			all_graph_nodes__xyr__new.set(all_graph_nodes__xyr);
+			all_graph_nodes__xyr = all_graph_nodes__xyr__new;
+		}
+		spare_allgraphnodesxyr_space -= 3;
+		all_graph_nodes__xyr[this_node_indx*3  ] = all_graph_nodes__xyr[currently_displaying_node_indx*3+0]+2.0*Math.cos(t)*sibling_halfr;
+		all_graph_nodes__xyr[this_node_indx*3+1] = all_graph_nodes__xyr[currently_displaying_node_indx*3+1]+2.0*Math.sin(t)*sibling_halfr;
 		
 		fix_nodesizes_of_descendents(currently_displaying_node_indx);
 		
