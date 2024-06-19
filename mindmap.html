@@ -826,15 +826,10 @@ void main(){
 		all_graph_nodes__xyr__new[this_node_indx*3  ] = all_graph_nodes__xyr[currently_displaying_node_indx*3+0]+2.0*Math.cos(t)*sibling_halfr;
 		all_graph_nodes__xyr__new[this_node_indx*3+1] = all_graph_nodes__xyr[currently_displaying_node_indx*3+1]+2.0*Math.sin(t)*sibling_halfr;
 		
-		const this_node_size = all_graph_nodes__xyr[currently_displaying_node_indx*3+2]/Math.sqrt(connectionses[currently_displaying_node_indx].length);
-		for (let nodeindx of connectionses[currently_displaying_node_indx]){
-			if ((nodeindx !== 0) && (all_parents[nodeindx-1] === currently_displaying_node_indx)){
-				// is child of currently_displaying_node_indx
-				all_graph_nodes__xyr__new[nodeindx*3+2] = this_node_size;
-			}
-		}
-		
 		all_graph_nodes__xyr = all_graph_nodes__xyr__new;
+		
+		fix_nodesizes_of_descendents(currently_displaying_node_indx);
+		
 		nodecolours.push(nodecolours[currently_displaying_node_indx]);
 		process_entries();
 		draw_graph_frame();
@@ -990,6 +985,17 @@ void main(){
 		}
 	});
 });
+
+const fix_nodesizes_of_descendents = (parent_node_indx) => {
+	const this_node_size = all_graph_nodes__xyr[parent_node_indx*3+2]/Math.sqrt(connectionses[parent_node_indx].length - 1 + (parent_node_indx===0));
+	for (let nodeindx of connectionses[parent_node_indx]){
+		if ((nodeindx !== 0) && (all_parents[nodeindx-1] === parent_node_indx)){
+			// is child of parent_node_indx
+			all_graph_nodes__xyr[nodeindx*3+2] = this_node_size;
+			fix_nodesizes_of_descendents(nodeindx);
+		}
+	}
+};
 
 const graph__highlighted_nodes = [
 	[ // Primary highlighted (clicked nodes)
