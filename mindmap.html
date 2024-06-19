@@ -40,7 +40,6 @@ p { /* Used by "Graph Editor" UI in inline.js AND nodecontent here */
 </div>
 <div id="nodecontent_container">
 	<input id="nodecontent_colourgroup_input" type="number" min="0" max="26" disabled></input><label for="nodecontent_colourgroup_input">Colour Group</label><br>
-	<input id="nodecontent_size_input" type="number" min="1" max="100" disabled></input><label for="nodecontent_size_input">Size</label>
 	<div id="siblings_container">
 		<h3>Siblings:</h3>
 		<div id="siblings_list"></div>
@@ -103,7 +102,6 @@ const nodecontent = document.getElementById("nodecontent");
 const nodecontent_save = document.getElementById("nodecontent_save");
 const nodecontent_createsibling_input = document.getElementById("nodecontent_createsibling_input");
 const nodecontent_colourgroup_input = document.getElementById("nodecontent_colourgroup_input");
-const nodecontent_size_input = document.getElementById("nodecontent_size_input");
 const siblings_list = document.getElementById("siblings_list");
 const siblings_adder_list = document.getElementById("siblings_adder_list");
 
@@ -779,7 +777,6 @@ void main(){
 				nodecontent_save.disabled = false;
 				nodecontent_createsibling_input.disabled = false;
 				nodecontent_colourgroup_input.disabled = false;
-				nodecontent_size_input.disabled = false;
 				currently_displaying_node_indx = d3__currently_selected;
 				
 				let siblings_list_innerHTML = "";
@@ -789,7 +786,6 @@ void main(){
 				siblings_list.innerHTML = siblings_list_innerHTML;
 				
 				nodecontent_colourgroup_input.value = nodecolours[d3__currently_selected];
-				nodecontent_size_input.value = parseInt(all_graph_nodes__xyr[3*d3__currently_selected+2]*10000.0);
 			}
 	});
 	
@@ -845,7 +841,6 @@ void main(){
 			nodecontent_save.disabled = true;
 			nodecontent_createsibling_input.disabled = true;
 			nodecontent_colourgroup_input.disabled = true;
-			nodecontent_size_input.disabled = true;
 			nodecontent.innerText = "";
 			siblings_list.innerHTML = "";
 			currently_displaying_node_indx = -1;
