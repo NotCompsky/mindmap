@@ -806,7 +806,7 @@ void main(){
 				let siblings_list_innerHTML = "";
 				for (let nodeindx of connectionses[d3__currently_selected]){
 					if (!all_children_nodeindices.includes(nodeindx)){
-						siblings_list_innerHTML += "<div>"+all_titles[nodeindx]+" <button data-i=\""+nodeindx+"\">Delete</button></div>";
+						siblings_list_innerHTML += "<div>"+all_titles[nodeindx]+" <button data-i=\""+nodeindx+"\">Unlink</button></div>";
 					}
 				}
 				siblings_list.innerHTML = siblings_list_innerHTML;
@@ -989,7 +989,7 @@ void main(){
 			}
 			
 			for (let nodeindx of matched_node_indices){
-				siblings_adder_list_innerHTML += "<div>"+all_titles[nodeindx]+" <button data-i=\""+nodeindx+"\">Add</button></div>";
+				siblings_adder_list_innerHTML += "<div>"+all_titles[nodeindx]+" <button data-i=\""+nodeindx+"\">Select</button></div>";
 			}
 		}
 		tgt.previousElementSibling.innerHTML = siblings_adder_list_innerHTML;
@@ -1009,9 +1009,7 @@ void main(){
 			const prev_parent_indx = all_parents[currently_displaying_node_indx-1];
 			const parent_connectns = connectionses[prev_parent_indx];
 			const sdfijsodfijsijfd = parent_connectns.indexOf(currently_displaying_node_indx);
-			console.log("OLD", JSON.stringify(connectionses[prev_parent_indx]));
 			connectionses[prev_parent_indx] = parent_connectns.splice(0,sdfijsodfijsijfd).concat(parent_connectns.splice(sdfijsodfijsijfd+1,parent_connectns.length));
-			console.log("NOW", JSON.stringify(connectionses[prev_parent_indx]));
 			
 			all_parents[currently_displaying_node_indx-1] = nodeindx2;
 			
