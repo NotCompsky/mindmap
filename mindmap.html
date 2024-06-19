@@ -15,7 +15,7 @@
 	right:1em;
 	position:absolute;
 }
-#siblings_container, #siblings_adder_container, #nodecontent_createsibling_input, #onlyusedincss1 {
+#children_container, #siblings_container, #siblings_adder_container, #nodecontent_createsibling_input, #onlyusedincss1 {
 	outline:1px solid red;
 	max-height:40vh;
 	overflow-y:scroll;
@@ -40,6 +40,11 @@ p { /* Used by "Graph Editor" UI in inline.js AND nodecontent here */
 </div>
 <div id="nodecontent_container">
 	<input id="nodecontent_colourgroup_input" type="number" min="0" max="26" disabled></input><label for="nodecontent_colourgroup_input">Colour Group</label><br>
+	<div id="children_container">
+		<h3>Children:</h3>
+		<div id="children_list"></div>
+		<button id="nodecontent_createsibling_input">Add Child</button>
+	</div>
 	<div id="siblings_container">
 		<h3>Siblings:</h3>
 		<div id="siblings_list"></div>
@@ -49,7 +54,6 @@ p { /* Used by "Graph Editor" UI in inline.js AND nodecontent here */
 		<div id="siblings_adder_list"></div>
 		<input id="node_select_sibling1" type="text" placeholder="Search..." disabled></input>
 	</div>
-	<button id="nodecontent_createsibling_input">Add Child</button>
 	<div id="onlyusedincss1">
 		<h3>Content:</h3>
 		<p id="nodecontent"></p>
@@ -102,6 +106,7 @@ const nodecontent = document.getElementById("nodecontent");
 const nodecontent_save = document.getElementById("nodecontent_save");
 const nodecontent_createsibling_input = document.getElementById("nodecontent_createsibling_input");
 const nodecontent_colourgroup_input = document.getElementById("nodecontent_colourgroup_input");
+const children_list = document.getElementById("children_list");
 const siblings_list = document.getElementById("siblings_list");
 const siblings_adder_list = document.getElementById("siblings_adder_list");
 
@@ -779,9 +784,21 @@ void main(){
 				nodecontent_colourgroup_input.disabled = false;
 				currently_displaying_node_indx = d3__currently_selected;
 				
+				const all_children_nodeindices = [];
+				let children_list_innerHTML = "";
+				for (let nodeindx = 1;  nodeindx <= all_parents.length;  ++nodeindx){
+					if (all_parents[nodeindx-1] === currently_displaying_node_indx){
+						all_children_nodeindices.push(nodeindx);
+						children_list_innerHTML += "<div>"+all_titles[nodeindx]+"</div>";
+					}
+				}
+				children_list.innerHTML = children_list_innerHTML;
+				
 				let siblings_list_innerHTML = "";
 				for (let nodeindx of connectionses[d3__currently_selected]){
-					siblings_list_innerHTML += "<div>"+all_titles[nodeindx]+" <button data-i=\""+nodeindx+"\">Delete</button></div>";
+					if (!all_children_nodeindices.includes(nodeindx)){
+						siblings_list_innerHTML += "<div>"+all_titles[nodeindx]+" <button data-i=\""+nodeindx+"\">Delete</button></div>";
+					}
 				}
 				siblings_list.innerHTML = siblings_list_innerHTML;
 				
@@ -829,6 +846,8 @@ void main(){
 		nodecolours.push(nodecolours[currently_displaying_node_indx]);
 		process_entries();
 		draw_graph_frame();
+		
+		children_list.innerHTML += "<div>New Node</div>";
 	});
 	
 	graph_canvas.addEventListener("pointerup", eventobj => {
@@ -842,6 +861,7 @@ void main(){
 			nodecontent_createsibling_input.disabled = true;
 			nodecontent_colourgroup_input.disabled = true;
 			nodecontent.innerText = "";
+			children_list.innerHTML = "";
 			siblings_list.innerHTML = "";
 			currently_displaying_node_indx = -1;
 			unhighlight_all_nodes();
