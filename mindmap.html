@@ -15,7 +15,7 @@
 	right:1em;
 	position:absolute;
 }
-#children_container, #siblings_container, #siblings_adder_container, #nodecontent_createsibling_input, #onlyusedincss1 {
+#parent_container, #children_container, #siblings_container, #siblings_adder_container, #nodecontent_createsibling_input, #onlyusedincss1 {
 	outline:1px solid red;
 	max-height:40vh;
 	overflow-y:scroll;
@@ -40,6 +40,12 @@ p { /* Used by "Graph Editor" UI in inline.js AND nodecontent here */
 </div>
 <div id="nodecontent_container">
 	<input id="nodecontent_colourgroup_input" type="number" min="0" max="26" disabled></input><label for="nodecontent_colourgroup_input">Colour Group</label><br>
+	<h3>Parent: <span id="nodecontent_parent_title"></span></h3>
+	<div id="parent_container">
+		<h3>Change Parent:</h3>
+		<div id="parent_changer_list"></div>
+		<input id="node_select_parent" type="text" placeholder="Search..." disabled></input>
+	</div>
 	<div id="children_container">
 		<h3>Children:</h3>
 		<div id="children_list"></div>
@@ -106,6 +112,8 @@ const nodecontent = document.getElementById("nodecontent");
 const nodecontent_save = document.getElementById("nodecontent_save");
 const nodecontent_createsibling_input = document.getElementById("nodecontent_createsibling_input");
 const nodecontent_colourgroup_input = document.getElementById("nodecontent_colourgroup_input");
+const nodecontent_parent_title = document.getElementById("nodecontent_parent_title");
+const parent_changer_list = document.getElementById("parent_changer_list");
 const children_list = document.getElementById("children_list");
 const siblings_list = document.getElementById("siblings_list");
 const siblings_adder_list = document.getElementById("siblings_adder_list");
@@ -778,6 +786,7 @@ void main(){
 				
 				nodecontent.innerText = contents[d3__currently_selected];
 				nodecontent.contentEditable = true;
+				node_select_parent.disabled = false;
 				node_select_sibling1.disabled = false;
 				nodecontent_save.disabled = false;
 				nodecontent_createsibling_input.disabled = false;
@@ -803,6 +812,8 @@ void main(){
 				siblings_list.innerHTML = siblings_list_innerHTML;
 				
 				nodecontent_colourgroup_input.value = nodecolours[d3__currently_selected];
+				
+				nodecontent_parent_title.innerText = (d3__currently_selected === 0) ? "" : all_titles[all_parents[d3__currently_selected-1]];
 			}
 	});
 	
@@ -856,6 +867,7 @@ void main(){
 		const [x,y] = get_canvas_coords_from_pointer_event(eventobj);
 		if (graph__hasnt_moved_pointer_since_clicking && (d3__currently_selected__last_tmp_value===null)){
 			nodecontent.contentEditable = false;
+			node_select_parent.disabled = true;
 			node_select_sibling1.disabled = true;
 			nodecontent_save.disabled = true;
 			nodecontent_createsibling_input.disabled = true;
@@ -863,6 +875,7 @@ void main(){
 			nodecontent.innerText = "";
 			children_list.innerHTML = "";
 			siblings_list.innerHTML = "";
+			nodecontent_parent_title.innerText = "";
 			currently_displaying_node_indx = -1;
 			unhighlight_all_nodes();
 		}
@@ -948,16 +961,29 @@ void main(){
 		}
 	}, 1000); // Every second, check if window has been resized. Doing it on "resize" event might trigger it hundreds of times if the window is being resized by mouse*/
 	
-
-	const node_select_sibling1 = document.getElementById("node_select_sibling1");
-	node_select_sibling1.addEventListener("input", eventobj => {
+	const node_selector_fn = eventobj => {
 		let siblings_adder_list_innerHTML = "";
 		const pattern = get_regexp_from_user_input_event(eventobj);
+		const tgt = eventobj.currentTarget;
+		const avoid_node_indices = [currently_displaying_node_indx];
+		if (tgt === node_select_parent){
+			// This avoids all descendants:
+			for (let i = 0;  i < avoid_node_indices.length;  ++i){ // NOTE: avoid_node_indices.length varies
+				const childnodeindx = avoid_node_indices[i];
+				for (let grandchildnodeindx = 1;  grandchildnodeindx <= all_parents.length;  ++grandchildnodeindx){
+					if (all_parents[grandchildnodeindx-1] === childnodeindx){
+						avoid_node_indices.push(grandchildnodeindx);
+					}
+				}
+			}
+			
+			avoid_node_indices.push(all_parents[currently_displaying_node_indx-1]);
+		}
 		if (pattern !== null){
 			const matched_node_indices = [];
 			for (let i = 0;  i < contents.length;  ++i){
 				if (contents[i].match(pattern) !== null){
-					if (i !== currently_displaying_node_indx)
+					if (!avoid_node_indices.includes(i))
 						matched_node_indices.push(i);
 				}
 			}
@@ -966,10 +992,36 @@ void main(){
 				siblings_adder_list_innerHTML += "<div>"+all_titles[nodeindx]+" <button data-i=\""+nodeindx+"\">Add</button></div>";
 			}
 		}
-		siblings_adder_list.innerHTML = siblings_adder_list_innerHTML;
-	});
+		tgt.previousElementSibling.innerHTML = siblings_adder_list_innerHTML;
+	};
+	
+	const node_select_parent = document.getElementById("node_select_parent");
+	node_select_parent.addEventListener("input", node_selector_fn);
+	
+	const node_select_sibling1 = document.getElementById("node_select_sibling1");
+	
+	node_select_sibling1.addEventListener("input", node_selector_fn);
 	document.getElementById("nodecontent_container").addEventListener("pointerup", e=>{
 		const tgt = e.target;
+		if (tgt.parentNode.parentNode === parent_changer_list){
+			const nodeindx2 = parseInt(tgt.dataset.i);
+			
+			const prev_parent_indx = all_parents[currently_displaying_node_indx-1];
+			const parent_connectns = connectionses[prev_parent_indx];
+			const sdfijsodfijsijfd = parent_connectns.indexOf(currently_displaying_node_indx);
+			console.log("OLD", JSON.stringify(connectionses[prev_parent_indx]));
+			connectionses[prev_parent_indx] = parent_connectns.splice(0,sdfijsodfijsijfd).concat(parent_connectns.splice(sdfijsodfijsijfd+1,parent_connectns.length));
+			console.log("NOW", JSON.stringify(connectionses[prev_parent_indx]));
+			
+			all_parents[currently_displaying_node_indx-1] = nodeindx2;
+			
+			connectionses[currently_displaying_node_indx][0] = nodeindx2;
+			connectionses[nodeindx2                     ].push(currently_displaying_node_indx);
+			process_entries();
+			draw_graph_frame();
+			
+			nodecontent_parent_title.innerText = all_titles[nodeindx2];
+		}
 		if (tgt.parentNode.parentNode === siblings_adder_list){
 			const nodeindx2 = parseInt(tgt.dataset.i);
 			if (!connectionses[currently_displaying_node_indx].includes(nodeindx2)){
