@@ -840,7 +840,7 @@ void main(){
 				let siblings_list_innerHTML = "";
 				for (let nodeindx of connectionses[d3__currently_selected]){
 					if (!all_children_nodeindices.includes(nodeindx)){
-						siblings_list_innerHTML += "<div>"+all_titles[nodeindx]+" <button data-i=\""+nodeindx+"\">Unlink</button></div>";
+						siblings_list_innerHTML += "<div>"+title_and_parenttitle(nodeindx)+" <button data-i=\""+nodeindx+"\">Unlink</button></div>";
 					}
 				}
 				siblings_list.innerHTML = siblings_list_innerHTML;
@@ -1023,6 +1023,10 @@ void main(){
 		}
 	}, 1000); // Every second, check if window has been resized. Doing it on "resize" event might trigger it hundreds of times if the window is being resized by mouse*/
 	
+	const title_and_parenttitle = nodeindx => {
+		return ((nodeindx===0)?"":all_titles[all_parents[nodeindx-1]])+" &lt; "+all_titles[nodeindx];
+	};
+	
 	const node_selector_fn = eventobj => {
 		let siblings_adder_list_innerHTML = "";
 		const pattern = get_regexp_from_user_input_event(eventobj);
@@ -1051,7 +1055,7 @@ void main(){
 			}
 			
 			for (let nodeindx of matched_node_indices){
-				siblings_adder_list_innerHTML += "<div>"+all_titles[nodeindx]+" <button data-i=\""+nodeindx+"\">Select</button></div>";
+				siblings_adder_list_innerHTML += "<div>"+title_and_parenttitle(nodeindx)+" <button data-i=\""+nodeindx+"\">Select</button></div>";
 			}
 		}
 		tgt.previousElementSibling.innerHTML = siblings_adder_list_innerHTML;
@@ -1083,7 +1087,7 @@ void main(){
 				connectionses[nodeindx2                     ].push(currently_displaying_node_indx);
 				process_entries();
 				draw_graph_frame();
-				siblings_list.innerHTML += "<div>"+all_titles[nodeindx2]+" <button data-i=\""+nodeindx2+"\">Delete</button></div>";
+				siblings_list.innerHTML += "<div>"+title_and_parenttitle(nodeindx2)+" <button data-i=\""+nodeindx2+"\">Delete</button></div>";
 				
 				save_btn.disabled = false;
 				copy_btn.disabled = false;
