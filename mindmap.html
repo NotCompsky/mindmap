@@ -237,7 +237,13 @@ document.getElementById("find_btn").addEventListener("pointerup", () => {
 	const tohighlightnodes = [];
 	for (let i = 0;  i < contents.length;  ++i){
 		if (contents[i].match(pattern) !== null){
-			tohighlightnodes.push(i);
+			let nodeindx = i;
+			while(true){
+				if (nodeindx === 0)
+					break;
+				tohighlightnodes.push(nodeindx);
+				nodeindx = all_parents[nodeindx-1];
+			}
 		}
 	}
 	highlight_intersect(tohighlightnodes, 0);
