@@ -1117,7 +1117,7 @@ void main(){
 });
 
 const fix_nodesizes_of_descendents = (parent_node_indx) => {
-	const this_node_size = all_graph_nodes__xyr[parent_node_indx*3+2]/Math.sqrt(connectionses[parent_node_indx].length - 1 + (parent_node_indx===0));
+	const this_node_size = all_graph_nodes__xyr[parent_node_indx*3+2]/(connectionses[parent_node_indx].length - 1 + (parent_node_indx===0));
 	for (let nodeindx of connectionses[parent_node_indx]){
 		if ((nodeindx !== 0) && (all_parents[nodeindx-1] === parent_node_indx)){
 			// is child of parent_node_indx
