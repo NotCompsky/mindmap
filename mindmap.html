@@ -273,8 +273,8 @@ const process_node = (size, depth, angle_offset, angle_step, x, y, d, this_node_
 		}
 		let prev_ysub = null;
 		let is_y_increasing = 2.0;
-		const size_sub = size/Math.sqrt(n_children);
-		const distance_from_root_sub = Math.sqrt(x*x + y*y) + size**0.5;
+		const size_sub = size/n_children;
+		const distance_from_root_sub = Math.sqrt(x*x + y*y) + 4.0*size_sub;
 		for (let i = 0;  i < sub_node_indices.length;  ++i){
 			const sub_node_indx = sub_node_indices[i];
 			if (i === skip_ith_anglerange)
