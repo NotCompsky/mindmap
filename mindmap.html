@@ -36,6 +36,7 @@ p { /* Used by "Graph Editor" UI in inline.js AND nodecontent here */
 	<button id="graph-btn--reset">Reset</button>
 	<input type="file" id="fileinput"/><label for="fileinput">Load</label>
 	<button id="save_btn">Save</button>
+	<button id="copy_btn">Copy</button>
 	<button id="find_btn">Find</button>
 </div>
 <div id="nodecontent_container">
@@ -211,6 +212,7 @@ const init_graph = (gl, vertexShader_src, fragmentShader_src) => {
 
 const max_line_length = 50;
 
+const copy_btn = document.getElementById("copy_btn");
 
 document.getElementById("save_btn").addEventListener("pointerup", () => {
 	const file = new Blob([JSON.stringify([contents,all_parents,misc_connections,nodecolours,colours])], {type:"application/json"});
@@ -224,6 +226,9 @@ document.getElementById("save_btn").addEventListener("pointerup", () => {
 		document.body.removeChild(a);
 		window.URL.revokeObjectURL(url);
 	}, 1);
+});
+copy_btn.addEventListener("pointerup", ()=>{
+	navigator.clipboard.writeText(JSON.stringify([contents,all_parents,misc_connections,nodecolours,colours]));
 });
 document.getElementById("find_btn").addEventListener("pointerup", () => {
 	const s = prompt("Pattern");
