@@ -212,9 +212,10 @@ const init_graph = (gl, vertexShader_src, fragmentShader_src) => {
 
 const max_line_length = 50;
 
+const save_btn = document.getElementById("save_btn");
 const copy_btn = document.getElementById("copy_btn");
 
-document.getElementById("save_btn").addEventListener("pointerup", () => {
+save_btn.addEventListener("pointerup", () => {
 	const file = new Blob([JSON.stringify([contents,all_parents,misc_connections,nodecolours,colours])], {type:"application/json"});
 	const a = document.createElement("a");
 	const url = URL.createObjectURL(file);
@@ -339,6 +340,9 @@ fileinput_btn.addEventListener("input", e => {
 			fileinput_btn.disabled = false;
 			
 			draw_graph_frame_or_polygon_replacement();
+			
+			save_btn.disabled = true;
+			copy_btn.disabled = true;
 		});
 		reader.readAsText(file);
 	}
@@ -855,6 +859,9 @@ void main(){
 			all_titles[nodeindx] = title_from_content(contents[nodeindx]);
 			draw_graph_frame__text_overlay();
 			nodecontent_save.disabled = false;
+			
+			save_btn.disabled = false;
+			copy_btn.disabled = false;
 		} else {
 			nodecontent.innerText = "NO! Select exactly 1 node\n"+nodecontent.innerText;
 		}
@@ -1058,6 +1065,9 @@ void main(){
 			draw_graph_frame();
 			
 			nodecontent_parent_title.innerText = all_titles[nodeindx2];
+			
+			save_btn.disabled = false;
+			copy_btn.disabled = false;
 		}
 		if (tgt.parentNode.parentNode === siblings_adder_list){
 			const nodeindx2 = parseInt(tgt.dataset.i);
@@ -1068,6 +1078,9 @@ void main(){
 				process_entries();
 				draw_graph_frame();
 				siblings_list.innerHTML += "<div>"+all_titles[nodeindx2]+" <button data-i=\""+nodeindx2+"\">Delete</button></div>";
+				
+				save_btn.disabled = false;
+				copy_btn.disabled = false;
 			}
 		}
 		if (tgt.parentNode.parentNode === siblings_list){
@@ -1086,6 +1099,9 @@ void main(){
 			process_entries();
 			draw_graph_frame();
 			tgt.parentNode.remove();
+			
+			save_btn.disabled = false;
+			copy_btn.disabled = false;
 		}
 	});
 });
