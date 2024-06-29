@@ -857,7 +857,7 @@ void main(){
 	});
 	
 	nodecontent_save.addEventListener("pointerup", ()=>{
-		const all_highlighted_nodes = graph__highlighted_nodes[0][1];
+		const all_highlighted_nodes = graph__highlighted_nodes[0];
 		if (all_highlighted_nodes.length === 1){
 			const nodeindx = all_highlighted_nodes[0];
 			nodecontent_save.disabled = true;
@@ -985,7 +985,7 @@ void main(){
 					unhighlight_hovered_nodes();
 					draw_graph_frame();
 				} else if (hovering_over_node !== d3__currently_selected){
-					highlight_node(hovering_over_node,2,eventobj.ctrlKey);
+					highlight_node(hovering_over_node,4,eventobj.ctrlKey);
 				}
 			}
 		}
@@ -1128,19 +1128,13 @@ const fix_nodesizes_of_descendents = (parent_node_indx) => {
 };
 
 const graph__highlighted_nodes = [
-	[ // Primary highlighted (clicked nodes)
-		[[1,0,0,1],[0.7,0,0,1]], [], []
-	],
-	[ // Secondary highlighted (neighbours of primary)
-		[[1,0,1,1],[0.7,0,0.7,1]], [], [] // NOTE: This never has edges in it (in the last array)
-	],
+	[], [], // Primary highlighted (clicked nodes)
 	
-	[ // Tertiary highlighted (hovered nodes)
-		[[0,1,0,1],[0,0.7,0,1]], [], []
-	],
-	[ // Quartiary highlighted (neighbours of hovered)
-		[[0,1,1,1],[0,0.7,0.7,1]], [], [] // NOTE: This never has edges in it (in the last array)
-	]
+	[], [], // Secondary highlighted (neighbours of primary) // NOTE: The 2nd array never has edges in it
+	
+	[], [], // Tertiary highlighted (hovered nodes)
+	
+	[], []  // Quartiary highlighted (neighbours of hovered) // NOTE: The 2nd array never has edges in it
 ]; // [Active, passive] highlights, consisting each of [colour_options, nodes], where nodes consists of node indices
 var graph_text_size_multiplier = 1;
 var graphcanvas__is_any_text_displayed = 0;
@@ -1148,9 +1142,8 @@ const draw_graph_frame__text_overlay = () => {
 	graphcanvas__is_any_text_displayed && graph_2dcanvas.clearRect(0,0,graph_canvas_width,graph_canvas_height); // Wipe text overlay
 	graphcanvas__is_any_text_displayed = 1;
 	for (let i = graph__highlighted_nodes.length;  i !== 0;  ){
-		--i;
-		const entry = graph__highlighted_nodes[i];
-		for (let node_indx of entry[1]){
+		i-=2;
+		for (let node_indx of graph__highlighted_nodes[i]){
 			const r = all_graph_nodes__xyr[3*node_indx+2] * graph__transformation_matrix[0];
 			let [x,y] = matrix_44_apply_to_v2(graph__transformation_matrix, all_graph_nodes__xyr[3*node_indx], all_graph_nodes__xyr[3*node_indx+1]);
 			x -= r*0.5;
@@ -1162,7 +1155,7 @@ const draw_graph_frame__text_overlay = () => {
 			}
 		}
 	}
-	for (let node_indx of graph__highlighted_nodes[0][1]){
+	for (let node_indx of graph__highlighted_nodes[0]){
 		graph_2dcanvas.fillStyle = "#ffffff";
 		const r = all_graph_nodes__xyr[3*node_indx+2] * graph__transformation_matrix[0];
 		let [x,y] = matrix_44_apply_to_v2(graph__transformation_matrix, all_graph_nodes__xyr[3*node_indx], all_graph_nodes__xyr[3*node_indx+1]);
@@ -1227,10 +1220,8 @@ const set_highlighted_node_colours = () => {
 	n_extra_graph_triangles_to_render = 0;
 	for (let i = graph__highlighted_nodes.length;  i !== 0;  ){
 		// In reverse order because a clicked node might also be counted as hovered
-		--i;
-		const entry = graph__highlighted_nodes[i];
-		const colour = entry[0][is_dark_theme];
-		for (let edge_indx of entry[2]){
+		i-=2;
+		for (let edge_indx of graph__highlighted_nodes[i+1]){
 			for (let j = 0;  j < 24;  ++j)
 				all_graph_nodes__colours[vertex_indx + j] = 1;
 			vertex_indx += 24;
@@ -1239,10 +1230,8 @@ const set_highlighted_node_colours = () => {
 	}
 	for (let i = graph__highlighted_nodes.length;  i !== 0;  ){
 		// In reverse order because a clicked node might also be counted as hovered
-		--i;
-		const entry = graph__highlighted_nodes[i];
-		const colour = entry[0][is_dark_theme];
-		for (let node_indx of entry[1]){
+		i-=2;
+		for (let node_indx of graph__highlighted_nodes[i]){
 			for (let j = 0;  j < 12;  ++j)
 				all_graph_nodes__colours[vertex_indx + j] = 2;
 			vertex_indx += 12;
@@ -1259,16 +1248,16 @@ const update_highlighted_node_coords = () => {
 	let matrix_indx = 48*all_titles.length + 12*n_graph_edges;
 	n_extra_graph_triangles_to_render = 0;
 	for (let i = graph__highlighted_nodes.length;  i !== 0;  ){
-		--i;
-		for (let edge_indx of graph__highlighted_nodes[i][2]){
+		i-=2;
+		for (let edge_indx of graph__highlighted_nodes[i+1]){
 			update_graph_edge_coord__webgl(matrix_indx, edge_indx);
 			matrix_indx += 12;
 			n_extra_graph_triangles_to_render += 2;
 		}
 	}
 	for (let i = graph__highlighted_nodes.length;  i !== 0;  ){
-		--i;
-		for (let node_indx2 of graph__highlighted_nodes[i][1]){
+		i-=2;
+		for (let node_indx2 of graph__highlighted_nodes[i]){
 			update_graph_node_coord__webgl(matrix_indx, node_indx2);
 			matrix_indx += 48;
 			n_extra_graph_triangles_to_render += 8;
@@ -1278,26 +1267,26 @@ const update_highlighted_node_coords = () => {
 	set_graph_node_coords(all_graph_nodes__matrixmults);
 };
 const highlight_node_intersect__core = (node_indx, highlight_indx) => {
-	graph__highlighted_nodes[highlight_indx  ][1].push(node_indx);
-	graph__highlighted_nodes[highlight_indx+1][1] = graph__highlighted_nodes[highlight_indx+1][1].filter(x => connectionses[node_indx].includes(x));
-	graph__highlighted_nodes[highlight_indx  ][2] = graph__highlighted_nodes[highlight_indx  ][2].concat(all_graph_nodes__edges[node_indx]).filter(edge_indx =>
-		graph__highlighted_nodes[highlight_indx+1][1].includes(all_graph_edges__ab[2*edge_indx]) ||
-		graph__highlighted_nodes[highlight_indx+1][1].includes(all_graph_edges__ab[2*edge_indx+1])
+	graph__highlighted_nodes[highlight_indx  ].push(node_indx);
+	graph__highlighted_nodes[highlight_indx+2] = graph__highlighted_nodes[highlight_indx+2].filter(x => connectionses[node_indx].includes(x));
+	graph__highlighted_nodes[highlight_indx+1] = graph__highlighted_nodes[highlight_indx+1].concat(all_graph_nodes__edges[node_indx]).filter(edge_indx =>
+		graph__highlighted_nodes[highlight_indx+2].includes(all_graph_edges__ab[2*edge_indx]) ||
+		graph__highlighted_nodes[highlight_indx+2].includes(all_graph_edges__ab[2*edge_indx+1])
 	);
 };
 const highlight_intersect = (node_indices, highlight_indx) => {
-	graph__highlighted_nodes[highlight_indx][1] = [];
+	graph__highlighted_nodes[highlight_indx] = [];
 	for (let node_indx of node_indices)
 		highlight_node_intersect__core(node_indx, highlight_indx);
 };
 const highlight_node__sort_out_arrs = (node_indx, highlight_indx, ctrl_clicked) => {
-	if (ctrl_clicked && (graph__highlighted_nodes[highlight_indx][1].length!==0)){
-		if (graph__highlighted_nodes[highlight_indx][1].includes(node_indx)){
+	if (ctrl_clicked && (graph__highlighted_nodes[highlight_indx].length!==0)){
+		if (graph__highlighted_nodes[highlight_indx].includes(node_indx)){
 			// Deselect node
-			const ls = graph__highlighted_nodes[highlight_indx][1].filter(x => x!==node_indx);
-			graph__highlighted_nodes[highlight_indx  ][1] = [];
-			graph__highlighted_nodes[highlight_indx+1][1] = [];
-			graph__highlighted_nodes[highlight_indx  ][2] = [];
+			const ls = graph__highlighted_nodes[highlight_indx].filter(x => x!==node_indx);
+			graph__highlighted_nodes[highlight_indx  ] = [];
+			graph__highlighted_nodes[highlight_indx+2] = [];
+			graph__highlighted_nodes[highlight_indx+1] = [];
 			if (ls.length !== 0){
 				for (let node_indx2 of ls){
 					highlight_node__sort_out_arrs(node_indx2, highlight_indx, 1);
@@ -1307,9 +1296,9 @@ const highlight_node__sort_out_arrs = (node_indx, highlight_indx, ctrl_clicked) 
 			highlight_node_intersect__core(node_indx, highlight_indx);
 		}
 	} else {
-		graph__highlighted_nodes[highlight_indx  ][1] = [node_indx];
-		graph__highlighted_nodes[highlight_indx  ][2] = all_graph_nodes__edges[node_indx];
-		graph__highlighted_nodes[highlight_indx+1][1] = connectionses[node_indx];
+		graph__highlighted_nodes[highlight_indx  ] = [node_indx];
+		graph__highlighted_nodes[highlight_indx+1] = all_graph_nodes__edges[node_indx];
+		graph__highlighted_nodes[highlight_indx+2] = connectionses[node_indx];
 	}
 };
 const highlight_node = (node_indx, highlight_indx, ctrl_clicked) => {
@@ -1322,23 +1311,24 @@ const highlight_node = (node_indx, highlight_indx, ctrl_clicked) => {
 	draw_graph_frame();
 };
 const unhighlight_hovered_nodes = () => {
-	if (graph__highlighted_nodes[2][1].length || graph__highlighted_nodes[3][1].length){
-		graph__highlighted_nodes[2][1] = [];
-		graph__highlighted_nodes[2][2] = [];
-		graph__highlighted_nodes[3][1] = [];
-		update_highlighted_node_coords();
+	if (graph__highlighted_nodes[4].length | graph__highlighted_nodes[6].length !== 0){
+		graph__highlighted_nodes[4] = [];
+		graph__highlighted_nodes[5] = [];
+		graph__highlighted_nodes[6] = [];
 		set_highlighted_node_colours();
 	}
 };
+
 const unhighlight_all_nodes = () => {
-	if (graph__highlighted_nodes[0][1].length || graph__highlighted_nodes[1][1].length || graph__highlighted_nodes[2][1].length || graph__highlighted_nodes[3][1].length){
-		graph__highlighted_nodes[0][1] = [];
-		graph__highlighted_nodes[0][2] = [];
-		graph__highlighted_nodes[1][1] = [];
-		graph__highlighted_nodes[2][1] = [];
-		graph__highlighted_nodes[2][2] = [];
-		graph__highlighted_nodes[3][1] = [];
-		n_extra_graph_triangles_to_render = 0;
+	if (graph__highlighted_nodes[0].length | graph__highlighted_nodes[2].length | graph__highlighted_nodes[4].length | graph__highlighted_nodes[6].length !==0 ){
+		graph__highlighted_nodes[0] = [];
+		graph__highlighted_nodes[1] = [];
+		graph__highlighted_nodes[2] = [];
+		graph__highlighted_nodes[3] = [];
+		graph__highlighted_nodes[4] = [];
+		graph__highlighted_nodes[5] = [];
+		graph__highlighted_nodes[6] = [];
+		set_highlighted_node_colours();
 		draw_graph_frame();
 	}
 };
