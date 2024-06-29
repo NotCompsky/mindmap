@@ -223,6 +223,8 @@ save_btn.addEventListener("pointerup", () => {
 	a.download = "rpill.json";
 	document.body.appendChild(a);
 	a.click();
+	save_btn.disabled = true;
+	copy_btn.disabled = true;
 	setTimeout(function(){
 		document.body.removeChild(a);
 		window.URL.revokeObjectURL(url);
