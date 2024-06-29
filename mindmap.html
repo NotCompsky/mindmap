@@ -842,7 +842,7 @@ void main(){
 				let siblings_list_innerHTML = "";
 				for (let nodeindx of connectionses[d3__currently_selected]){
 					if (!all_children_nodeindices.includes(nodeindx)){
-						siblings_list_innerHTML += "<div>"+title_and_parenttitle(nodeindx)+" <button data-i=\""+nodeindx+"\">Unlink</button></div>";
+						siblings_list_innerHTML += "<div data-i=\""+nodeindx+"\"><span>"+title_and_parenttitle(nodeindx)+"</span> <button>Unlink</button></div>";
 					}
 				}
 				siblings_list.innerHTML = siblings_list_innerHTML;
@@ -1057,7 +1057,7 @@ void main(){
 			}
 			
 			for (let nodeindx of matched_node_indices){
-				siblings_adder_list_innerHTML += "<div>"+title_and_parenttitle(nodeindx)+" <button data-i=\""+nodeindx+"\">Select</button></div>";
+				siblings_adder_list_innerHTML += "<div data-i=\""+nodeindx+"\"><span>"+title_and_parenttitle(nodeindx)+"</span> <button>Select</button></div>";
 			}
 		}
 		tgt.previousElementSibling.innerHTML = siblings_adder_list_innerHTML;
@@ -1071,8 +1071,19 @@ void main(){
 	node_select_sibling1.addEventListener("input", node_selector_fn);
 	document.getElementById("nodecontent_container").addEventListener("pointerup", e=>{
 		const tgt = e.target;
+		const nodeindx2 = parseInt(tgt.parentNode.dataset.i);
+		if (tgt.tagName === "SPAN"){
+			centre_graph_on_bounding_box(
+				all_graph_nodes__xyr[3*nodeindx2  ]-all_graph_nodes__xyr[3*nodeindx2+2],
+				all_graph_nodes__xyr[3*nodeindx2  ]+all_graph_nodes__xyr[3*nodeindx2+2],
+				all_graph_nodes__xyr[3*nodeindx2+1]-all_graph_nodes__xyr[3*nodeindx2+2],
+				all_graph_nodes__xyr[3*nodeindx2+1]+all_graph_nodes__xyr[3*nodeindx2+2],
+				0.125
+			);
+			draw_graph_frame();
+		} else {
 		if (tgt.parentNode.parentNode === parent_changer_list){
-			change_parent_of_node1_to_node2(currently_displaying_node_indx, parseInt(tgt.dataset.i));
+			change_parent_of_node1_to_node2(currently_displaying_node_indx, nodeindx2);
 			process_entries();
 			draw_graph_frame();
 			
@@ -1082,21 +1093,19 @@ void main(){
 			copy_btn.disabled = false;
 		}
 		if (tgt.parentNode.parentNode === siblings_adder_list){
-			const nodeindx2 = parseInt(tgt.dataset.i);
 			if (!connectionses[currently_displaying_node_indx].includes(nodeindx2)){
 				misc_connections.push(currently_displaying_node_indx, nodeindx2);
 				connectionses[currently_displaying_node_indx].push(nodeindx2);
 				connectionses[nodeindx2                     ].push(currently_displaying_node_indx);
 				process_entries();
 				draw_graph_frame();
-				siblings_list.innerHTML += "<div>"+title_and_parenttitle(nodeindx2)+" <button data-i=\""+nodeindx2+"\">Delete</button></div>";
+				siblings_list.innerHTML += "<div data-i=\""+nodeindx2+"\"><span>"+title_and_parenttitle(nodeindx2)+"</span> <button>Delete</button></div>";
 				
 				save_btn.disabled = false;
 				copy_btn.disabled = false;
 			}
 		}
 		if (tgt.parentNode.parentNode === siblings_list){
-			const nodeindx2 = parseInt(tgt.dataset.i);
 			for (let i = 0;  i < misc_connections.length;  i+=2){
 				if (
 					((misc_connections[i] === currently_displaying_node_indx) && (misc_connections[i+1] === nodeindx2                     )) ||
@@ -1115,8 +1124,23 @@ void main(){
 			save_btn.disabled = false;
 			copy_btn.disabled = false;
 		}
+		}
 	});
 });
+
+const centre_graph_on_bounding_box = (min_x, max_x, min_y, max_y, half_scaleby) => {
+	// NOTE: To restrict the screen to EXACTLY the box, half_scaleby = 0.5
+	let max_width_or_height = half_scaleby / (((max_x-min_x > max_y-min_y)|0) * (max_x-min_x)  +  ((((max_x-min_x > max_y-min_y)|0) ^ 1) * (max_y-min_y)));
+	if (graph_canvas_width > graph_canvas_height){
+		max_width_or_height *= graph_canvas_height / graph_canvas_width;
+	}
+	// NOTE: No need to guarantee a minimum width, because every node is guaranteed to be connected to at least one other node
+	graph__transformation_matrix[0]  = max_width_or_height;
+	graph__transformation_matrix[5]  = max_width_or_height * graph_canvas_width / graph_canvas_height;
+	graph__transformation_matrix[12] = -0.5 * max_width_or_height * (min_x + max_x);
+	graph__transformation_matrix[13] = -0.5 * max_width_or_height * (min_y + max_y) * graph_canvas_width / graph_canvas_height;
+	update_graph_transformation();
+};
 
 const fix_nodesizes_of_descendents = (parent_node_indx) => {
 	const this_node_size = all_graph_nodes__xyr[parent_node_indx*3+2]/(connectionses[parent_node_indx].length - 1 + (parent_node_indx===0));
