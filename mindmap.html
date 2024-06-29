@@ -63,6 +63,7 @@ p { /* Used by "Graph Editor" UI in inline.js AND nodecontent here */
 	</div>
 	<div id="onlyusedincss1">
 		<h3>Content:</h3>
+		<input id="nodecontent_checkbox" type="checkbox"></input>
 		<p id="nodecontent"></p>
 		<button id="nodecontent_save">Save</button>
 	</div>
@@ -110,6 +111,7 @@ const get_regexp_from_user_input_event = eventobj => {
 };
 
 const nodecontent = document.getElementById("nodecontent");
+const nodecontent_checkbox = document.getElementById("nodecontent_checkbox");
 const nodecontent_save = document.getElementById("nodecontent_save");
 const nodecontent_createsibling_input = document.getElementById("nodecontent_createsibling_input");
 const nodecontent_colourgroup_input = document.getElementById("nodecontent_colourgroup_input");
@@ -821,9 +823,11 @@ void main(){
 				highlight_node(d3__currently_selected,0,eventobj.ctrlKey);
 				
 				nodecontent.innerText = contents[d3__currently_selected];
+				nodecontent_checkbox.checked = contents[d3__currently_selected].startsWith("USED: ");
 				nodecontent.contentEditable = true;
 				node_select_parent.disabled = false;
 				node_select_sibling1.disabled = false;
+				nodecontent_checkbox.disabled = false;
 				nodecontent_save.disabled = false;
 				nodecontent_createsibling_input.disabled = false;
 				nodecontent_colourgroup_input.disabled = false;
@@ -858,12 +862,25 @@ void main(){
 		draw_graph_frame_or_polygon_replacement();
 	});
 	
+	nodecontent_checkbox.addEventListener("change", ()=>{
+		let content = contents[nodeindx];
+		if (content.startsWith("USED: ")){
+			content = content.substr(6);
+		} else {
+			content = "USED: " + content;
+		}
+		contents[nodeindx] = content;
+		all_titles[nodeindx] = title_from_content(content);
+		nodecontent.innerText = content;
+	});
+	
 	nodecontent_save.addEventListener("pointerup", ()=>{
 		const all_highlighted_nodes = graph__highlighted_nodes[0];
 		if (all_highlighted_nodes.length === 1){
 			const nodeindx = all_highlighted_nodes[0];
 			nodecontent_save.disabled = true;
 			contents[nodeindx] = nodecontent.innerText;
+			nodecontent_checkbox.checked = contents[nodeindx].startsWith("USED: ");
 			all_titles[nodeindx] = title_from_content(contents[nodeindx]);
 			draw_graph_frame__text_overlay();
 			nodecontent_save.disabled = false;
@@ -930,6 +947,7 @@ void main(){
 			nodecontent.contentEditable = false;
 			node_select_parent.disabled = true;
 			node_select_sibling1.disabled = true;
+			nodecontent_checkbox.disabled = true;
 			nodecontent_save.disabled = true;
 			nodecontent_createsibling_input.disabled = true;
 			nodecontent_colourgroup_input.disabled = true;
