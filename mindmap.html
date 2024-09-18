@@ -852,7 +852,14 @@ void main(){
 				for (let nodeindx = 1;  nodeindx <= all_parents.length;  ++nodeindx){
 					if (all_parents[nodeindx-1] === currently_displaying_node_indx){
 						all_children_nodeindices.push(nodeindx);
-						children_list_innerHTML += "<div>"+all_titles[nodeindx]+"</div>";
+						let child_has_children = false;
+						for (let nodeindx2 = 1;  nodeindx2 <= all_parents.length;  ++nodeindx2){
+							child_has_children ||= (all_parents[nodeindx2-1] === nodeindx);
+						}
+						children_list_innerHTML += "<div>"+all_titles[nodeindx];
+						if (!child_has_children)
+							children_list_innerHTML += " (Childless)</div>";
+						children_list_innerHTML += "</div>";
 					}
 				}
 				children_list.innerHTML = children_list_innerHTML;
