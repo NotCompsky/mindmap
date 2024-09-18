@@ -532,7 +532,7 @@ const matrix_44_apply_to_v2 = (A, x, y) => [A[0]*x+A[4]*y+A[12], A[1]*x+A[5]*y+A
 
 const node_containing_coords = (x,y) => {
 	// Finds the node whose centre is closest, limited to those whose radius it is within
-	let largest_distance_from_circle_edge = -9999999.0;
+	let largest_distance_from_circle_edge = 1<<31;
 	let closest_node = null;
 	for (let i = 0;  i < connectionses.length;  ++i){
 		const distance = (x - all_graph_nodes__xyr[3*i])**2 + (y - all_graph_nodes__xyr[3*i+1])**2 - all_graph_nodes__xyr[3*i+2]**2;
