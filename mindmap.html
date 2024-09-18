@@ -269,8 +269,6 @@ const title_from_content = content => {
 
 
 const process_node = (size, depth, angle_offset, angle_step, x, y, d, this_node_indx, parent_node_indx) => {
-	if (title_from_content(contents[this_node_indx]) === "useful tools")
-		console.log("process_node",this_node_indx,title_from_content(contents[this_node_indx]));
 	const sub_node_indices = d[this_node_indx];
 	const n_children = sub_node_indices.length;
 	
