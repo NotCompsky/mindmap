@@ -1259,6 +1259,8 @@ const draw_graph_frame__text_overlay = () => {
 				graph_2dcanvas.fillText(line, graph_canvas_width*(x+1)/2, graph_canvas_height*yy);
 				yy += r;
 				offset = next_offset;
+				if (graph_canvas_height*yy > 900) // probably off-screen
+					break;
 			}
 		}
 	}
