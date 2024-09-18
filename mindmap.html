@@ -335,6 +335,10 @@ fileinput_btn.addEventListener("input", e => {
 				connectionses[all_parents[i]].push(i+1);
 			process_node(1, 1, 0.0, 2.0*3.14152, 0.0, 0.0, connectionses, 0, 0);
 			
+			/*for (let i = 0;  i < misc_connections.length;  i+=2){
+				connectionses[misc_connections[i  ]].push(misc_connections[i+1]);
+				connectionses[misc_connections[i+1]].push(misc_connections[i  ]);
+			}, equivalent to: */
 			for (let i = 0;  i < misc_connections.length;  ++i){
 				connectionses[misc_connections[i]].push(misc_connections[i + 1 - ((i&1)<<1)]);
 			}
@@ -801,6 +805,19 @@ void main(){
 	draw_graph_frame();
 	
 	let d3__currently_selected = null;
+	/* TODO graph_canvas.addEventListener("webglcontextlost", eventobj=>{
+		eventobj.preventDefault();
+		console.log("webglcontextlost");
+		// automatically restores context it seems - although haven't ensured that this event fires
+	});
+	graph_canvas.addEventListener("webglcontextrestored", ()=>{
+		console.log("webglcontextrestored");
+		set_up_webgl();
+		for__allocate_graph_webgl_memory__init_graph_gl_buffers();
+		set_graph_node_colourstates(all_graph_nodes__colours);
+		draw_graph_frame();
+	});*/
+	
 	let graph__hasnt_moved_pointer_since_clicking;
 	let d3__currently_selected__last_tmp_value = null;
 	let clicked_on_region_indx = -1;
@@ -1061,6 +1078,12 @@ void main(){
 			}
 			
 			avoid_node_indices.push(all_parents[currently_displaying_node_indx-1]);
+			/* This avoids all ancestors:
+			let parent_node_indx = currently_displaying_node_indx;
+			while(parent_node_indx !== 0){
+				parent_node_indx = all_parents[parent_node_indx-1];
+				avoid_node_indices.push(parent_node_indx);
+			} */
 		}
 		if (pattern !== null){
 			const matched_node_indices = [];
@@ -1088,6 +1111,7 @@ void main(){
 		const tgt = e.target;
 		const nodeindx2 = parseInt(tgt.parentNode.dataset.i);
 		if (tgt.tagName === "SPAN"){
+			//highlight_and_centre_node(graph_gl, nodeindx2, 4, 0, true);
 			centre_graph_on_bounding_box(
 				all_graph_nodes__xyr[3*nodeindx2  ]-all_graph_nodes__xyr[3*nodeindx2+2],
 				all_graph_nodes__xyr[3*nodeindx2  ]+all_graph_nodes__xyr[3*nodeindx2+2],
@@ -1101,6 +1125,8 @@ void main(){
 			change_parent_of_node1_to_node2(currently_displaying_node_indx, nodeindx2);
 			process_entries();
 			draw_graph_frame();
+			
+			// TODO: all_graph_edges__ab doesn't seem to be updated properly, despite being done in process_entries
 			
 			nodecontent_parent_title.innerText = all_titles[nodeindx2];
 			
