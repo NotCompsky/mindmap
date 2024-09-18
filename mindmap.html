@@ -716,7 +716,7 @@ document.addEventListener("DOMContentLoaded", () => {
 	const graph_gl_program = init_graph(
 		graph_gl,
 		`#version 300 es
-precision mediump float;
+precision highp float;
 
 layout(location=0)in vec4 a;
 layout(location=1)in float b;
@@ -727,10 +727,10 @@ void main(){
 	v_colour=b;
 }`,
 		`#version 300 es
-precision mediump float;
+precision highp float;
 
 uniform vec4 u[56];
-precision mediump float;
+precision highp float;
 in float v_colour;
 out vec4 c;
 void main(){
