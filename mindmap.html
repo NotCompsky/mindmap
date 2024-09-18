@@ -123,7 +123,7 @@ const siblings_list = document.getElementById("siblings_list");
 const siblings_adder_list = document.getElementById("siblings_adder_list");
 
 const underlying_buffer2 = [
-	0.001,0,0,0, 0,0.001,0,0, 0,0,1,0, 0,0,0,1, // graph__transformation_matrix
+	0.00004,0,0,0, 0,0.00004,0,0, 0,0,1,0, 0,0,0,1, // graph__transformation_matrix
 	
 	
 	
@@ -274,9 +274,9 @@ const process_node = (size, depth, angle_offset, angle_step, x, y, d, this_node_
 	const sub_node_indices = d[this_node_indx];
 	const n_children = sub_node_indices.length;
 	
-	all_graph_nodes__xyr[this_node_indx*3  ] = 10000.0*x;
-	all_graph_nodes__xyr[this_node_indx*3+1] = 10000.0*y;
-	all_graph_nodes__xyr[this_node_indx*3+2] = 1000.0*size;
+	all_graph_nodes__xyr[this_node_indx*3  ] = 100000.0*x;
+	all_graph_nodes__xyr[this_node_indx*3+1] = 100000.0*y;
+	all_graph_nodes__xyr[this_node_indx*3+2] = 10000.0*size;
 	
 	if (n_children !== 0){
 		let angle_offset_sub = angle_offset;
@@ -366,9 +366,7 @@ var misc_connections = [];
 const connectionses = [[1],[0]];
 var nodecolours = [0,0];
 var colours = ["#ff0000"];
-var all_graph_nodes__xyr = [0.0,0.0,100.0, 200.0,200.0,100.0];
-//const all_entries = [{connections:[1],content:"Foo\nfoo\nfoo"},{connections:[0],content:"Bar\nbar\nbar"}];
-//const all_graph_nodes__xyr = [0,0,100, 500,500,50];
+var all_graph_nodes__xyr = new Float32Array([0.0,0.0,1000.0, 2000.0,2000.0,1000.0]);
 
 function process_entries(){
 	n_graph_edges = all_parents.length + (misc_connections.length>>1);
@@ -859,7 +857,7 @@ void main(){
 	});
 	
 	document.getElementById("graph-btn--reset").addEventListener("pointerdown", ()=>{
-		set_graph_transformation(0.001,0.0,0.0);
+		set_graph_transformation(0.00004,0.0,0.0);
 		draw_graph_frame_or_polygon_replacement();
 	});
 	
