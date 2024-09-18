@@ -501,6 +501,7 @@ const all_graph_nodes__edges = [];
 var n_graph_edges = 0;
 var all_graph_edges__xyr;
 var all_graph_edges__ab = new Int32Array(0); // for length property
+let d3__currently_selected = null;
 
 const dl_text_as_file = (filename, text) => {
 	const a = document.createElement("a");
@@ -804,7 +805,6 @@ void main(){
 	process_entries();
 	draw_graph_frame();
 	
-	let d3__currently_selected = null;
 	/* TODO graph_canvas.addEventListener("webglcontextlost", eventobj=>{
 		eventobj.preventDefault();
 		console.log("webglcontextlost");
@@ -877,14 +877,14 @@ void main(){
 	});
 	
 	nodecontent_checkbox.addEventListener("change", ()=>{
-		let content = contents[nodeindx];
+		let content = contents[currently_displaying_node_indx];
 		if (content.startsWith("USED: ")){
 			content = content.substr(6);
 		} else {
 			content = "USED: " + content;
 		}
-		contents[nodeindx] = content;
-		all_titles[nodeindx] = title_from_content(content);
+		contents[currently_displaying_node_indx] = content;
+		all_titles[currently_displaying_node_indx] = title_from_content(content);
 		nodecontent.innerText = content;
 	});
 	
