@@ -892,7 +892,13 @@ void main(){
 		}
 		contents[currently_displaying_node_indx] = content;
 		all_titles[currently_displaying_node_indx] = title_from_content(content);
+		
+		draw_graph_frame__text_overlay();
+		
 		nodecontent.innerText = content;
+		
+		save_btn.disabled = false;
+		copy_btn.disabled = false;
 	});
 	
 	nodecontent_save.addEventListener("pointerup", ()=>{
