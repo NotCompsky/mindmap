@@ -9,7 +9,7 @@
 ## Features
 
 * Self-hostable
-  * It is fully contained within one HTML file and one CSS file, with no backend required
+  * It is fully self-contained (one HTML file, one JS file, and one CSS file) with no backend required
 * Very fast
   * It uses WebGL and optimised JavaScript
   * Alternatives tend to use SVG or very abstract (and inefficient) libraries, which don't scale well for thousands of nodes
@@ -44,7 +44,7 @@ What this software lacks:
 
 ## Installation
 
-Copy [mindmap.html](mindmap.html) and [mindmap.css](mindmap.css), and access them from your computer, or serve them from your server.
+Copy [mindmap.html](mindmap.html), [mindmap.js](mindmap.js) and [mindmap.css](mindmap.css), and access `mindmap.html` directly in a browser (`file:///path/to/mindmap.html`) or serve them from any file server.
 
 ## Example
 
