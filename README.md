@@ -2,11 +2,14 @@
 
 * [Features](#Features)
 * [Use cases](#Uses)
+* [How to install](#Installation)
 * [Screenshots](#Example)
 * [Alternatives](#Alternatives)
 
 ## Features
 
+* Self-hostable
+  * It is fully contained within one HTML file and one CSS file, with no backend required
 * Very fast
   * It uses WebGL and optimised JavaScript
   * Alternatives tend to use SVG or very abstract (and inefficient) libraries, which don't scale well for thousands of nodes
@@ -18,6 +21,8 @@
   * Nodes scale according to the size available to them and their descendants
 * Nodes can be moved from one 'parent' to another
 * Nodes can also have siblings
+* Nodes can have custom background colours
+  * It can be inherited from parents
 * RegEx and normal search
 
 ## Uses
@@ -37,6 +42,10 @@ What this software lacks:
   * It's not pretty enough for PowerPoint presentations
 * Version control
 
+## Installation
+
+Copy [mindmap.html](mindmap.html) and [mindmap.css](mindmap.css), and access them from your computer, or serve them from your server.
+
 ## Example
 
 ![Screenshot_20240918_205342](https://github.com/user-attachments/assets/89864844-35bb-4e3c-8d8b-a682a8686fda)
@@ -52,6 +61,24 @@ What this software lacks:
 🟢 Feature that my project does not have  
 🔴 Failure that my project does not have
 
+* MindmapTree • [Code](https://github.com/RockyRen/mindmaptree) • [Example](https://rockyren.github.io/mindmaptree/demo.html)
+  * 🟢 Click and drag
+  * 🟢 Undo/redo
+  * 🔴 Uses SVG, so:
+    * 🔴 it cannot handle thousands of nodes
+  * 🔴 Limited to left-right line
+  * 🔴 Awkward to display many nodes
+* Mindmap by Awehook [Code](https://github.com/awehook/react-mindmap) [Example](https://awehook.github.io/react-mindmap/)
+  * 🟢 Collapse/expand branches
+  * 🟢 Flowcharts
+  * 🔴 Nodes are HTML `<div>`s, so it has the downsides of svg and more limitations on functionality
+* TeamMapper • [Code](https://github.com/b310-digital/teammapper) • [Example](https://github.com/b310-digital/teammapper)
+  * 🟢 Allows simultaneous collaborative editing
+  * 🟢 Inline images, colours, and hyperlinks
+  * 🟢 Undo/redo
+  * 🟢 Export to image
+  * 🔴 Requires backend server
+  * 🔴 More fragile (breaks with too many nodes, lags due to server synchronisation)
 * MarkMap • [Code](https://github.com/markmap/markmap) • [Example](https://markmap.js.org/repl)
   * 🔴 Uses SVG, so:
     * 🔴 it cannot handle thousands of nodes
@@ -59,18 +86,21 @@ What this software lacks:
     * 🟢 it can be used with version control utilities (e.g. `git`)
     * 🟢 it can place inline HTML (tables, LaTex) into the mindmap
   * Similar to [dundalek's MarkMap](https://github.com/dundalek/markmap) but serves the opposite purpose
+  * Similar to [a Obsidian plugin](https://github.com/MarkMindCkm/obsidian-enhancing-mindmap)
 * MyMind by Ondřej Žára • [Code](https://github.com/ondras/my-mind) • [Example](https://my-mind.github.io/?url=examples%2Ffeatures.mymind)
-  * 🔴 Uses SVG, so:
-    * 🔴 it cannot handle thousands of nodes
-    * 🟢 it supports rich text formatting (hyperlinks, colours)
   * 🟢 Nodes can do basic math operations
   * 🟢 Undo/redo
   * 🟢 Export to image
   * 🟢 Collapse/expand branches
+  * 🔴 Uses SVG, so:
+    * 🔴 it cannot handle thousands of nodes
+    * 🟢 it supports rich text formatting (hyperlinks, colours)
 * Mindmaps by David Richard • [Code](https://github.com/drichard/mindmaps) • [Example](https://www.mindmaps.app/)
+  * 🟢 Undo/redo (but `undo` sometimes fails)
   * 🔴 Uses SVG, so:
     * 🔴 it cannot handle thousands of nodes
   * 🔴 No ability to save your changes when SVG crashes (to save RAM, browsers often unload SVG/WebGL assets without unloading the page)
   * Can import from this, using `import-from-mymind.py`
+* MindMup • [Code](https://github.com/davedf/mapjs) • [Example](http://www.mindmup.com/)
 * Neurite • [Code](https://github.com/satellitecomponent/Neurite) • [Example](https://satellitecomponent.github.io/Neurite/)
   * For visualising mathematical systems
