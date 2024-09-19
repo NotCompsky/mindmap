@@ -305,6 +305,16 @@ const process_node = (size, depth, angle_offset, angle_step, x, y, d, this_node_
 				const text_size_sub = size_sub*0.2;
 				if ((is_y_increasing*prev_ysub < is_y_increasing*y_sub) && (is_y_increasing*y_sub < is_y_increasing*(prev_ysub+is_y_increasing*text_size_sub)))
 					y_sub += is_y_increasing*text_size_sub;
+				/*
+				((is_y_increasing*prev_ysub < is_y_increasing*y_sub) && (is_y_increasing*y_sub < is_y_increasing*(prev_ysub+is_y_increasing*text_size_sub)))  is equivalent to:
+				if (is_y_increasing === 1){
+					if ((prev_ysub < y_sub) && (y_sub < (prev_ysub+text_size_sub)))
+						y_sub = prev_ysub + text_size_sub;
+				} else {
+					if ((prev_ysub >= y_sub) && (y_sub >= prev_ysub-text_size_sub))
+						y_sub = prev_ysub - text_size_sub;
+				}
+				*/
 			}
 			process_node(size_sub, depth+1, angle_offset_sub, angle_step_sub, x_sub, y_sub, d, sub_node_indx, this_node_indx);
 			angle_offset_sub += angle_step_sub;
