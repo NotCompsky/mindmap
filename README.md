@@ -22,7 +22,7 @@
   * Nodes never overlap
   * Nodes scale according to the size available to them and their descendants
 * Nodes can be moved from one 'parent' to another
-* Nodes can also have siblings
+* Nodes can also have 'adopted siblings'
 * Nodes can have custom background colours
   * It can be inherited from parents
 * RegEx and normal search
@@ -33,7 +33,7 @@ What this software is for:
 
 * To represent *huge* mindmaps
 * To represent mindmaps that are not simple trees
-  * Which have parent, child *and* sibling relations
+  * Which have parent, child *and* 'adopted sibling' relations
 * It feels most natural when nodes have titles
   * Each node only displays its first line of text, until it is clicked on
 
