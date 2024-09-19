@@ -5,7 +5,6 @@
   * Alternatives tend to use SVG or very abstract (and inefficient) libraries, which don't scale well for thousands of nodes
 * Very robust
   * Browsers tend to unload WebGL after a long time if you change tabs - you can still save or export your data if this occurs
-  * Alternatives sometimes freeze when they reached thousands of nodes, with no ability to save your changes
 * Import and export (as JSON files)
 * Layout is automatically generated
   * Nodes never overlap
@@ -13,6 +12,12 @@
 * Nodes can be moved from one 'parent' to another
 * Nodes can also have siblings
 * RegEx and normal search
+
+## Alternatives
+
+* [My Mind](https://github.com/drichard/mindmaps)
+  * Freezes when it reaches thousands of nodes, with no ability to save your changes
+  * Can import from this, using `import-from-mymind.py`
 
 ## Example
 
