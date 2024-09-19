@@ -1,3 +1,5 @@
+🔵 [Try it out here](https://notcompsky.github.io/mindmap/mindmap.html) 🔵
+
 ## TOC
 
 * [Features](#Features)
