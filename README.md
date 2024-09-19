@@ -61,6 +61,7 @@ Copy [mindmap.html](mindmap.html), [mindmap.js](mindmap.js) and [mindmap.css](mi
 ## Alternatives
 
 🟢 Feature that my project does not have  
+🟡 Rare feature that it shares with my project  
 🔴 Failure that my project does not have
 
 * MindmapTree • [Code](https://github.com/RockyRen/mindmaptree) • [Example](https://rockyren.github.io/mindmaptree/demo.html)
@@ -103,6 +104,15 @@ Copy [mindmap.html](mindmap.html), [mindmap.js](mindmap.js) and [mindmap.css](mi
     * 🔴 it cannot handle thousands of nodes
   * 🔴 No ability to save your changes when SVG crashes (to save RAM, browsers often unload SVG/WebGL assets without unloading the page)
   * Can import from this, using `import-from-mymind.py`
+* Minder • [Code](https://github.com/phase1geo/Minder)
+  * 🟡 Nodes can have 'adopted siblings'
+  * 🟢 Undo/redo
+  * 🟢 Can place text on lines
+  * 🟢 Import from many different formats
+  * 🟢 Export to image or markdown
+  * 🟢 Some stylisation options for nodes
+  * 🔴 Native app
+    * Less portable, but presumably handles large mindmaps better than the other alternatives
 * MindMup • [Code](https://github.com/davedf/mapjs) • [Example](http://www.mindmup.com/)
 * Neurite • [Code](https://github.com/satellitecomponent/Neurite) • [Example](https://satellitecomponent.github.io/Neurite/)
   * For visualising mathematical systems
